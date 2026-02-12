@@ -1,0 +1,161 @@
+'use client';
+
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { BottomNav } from '@/components/layout/BottomNav';
+import { useBudgetStore, useTransactionStore, useGameStore } from '@/stores';
+import { Fortress3D } from '@/components/visuals/Fortress3D';
+
+const ACHIEVEMENTS = [
+  { id: 'first_setup', label: 'Mulai Petualangan', icon: 'flag', description: 'Selesaikan setup awal' },
+  { id: 'first_transaction', label: 'Transaksi Pertama', icon: 'receipt_long', description: 'Catat transaksi pertamamu' },
+  { id: 'streak_3', label: '3 Hari Berturut', icon: 'local_fire_department', description: 'Catat 3 hari berturut-turut' },
+  { id: 'streak_7', label: 'Seminggu Penuh', icon: 'date_range', description: 'Catat 7 hari berturut-turut' },
+  { id: 'budget_master', label: 'Budget Master', icon: 'account_balance_wallet', description: 'Selesaikan bulan tanpa over budget' },
+  { id: 'saver_pro', label: 'Saver Pro', icon: 'savings', description: 'Hemat 30% dari budget' },
+];
+
+export default function BattlePage() {
+  const { getHP } = useBudgetStore();
+  const { getTotalExpenseThisMonth } = useTransactionStore();
+  const { xp, level, streak, achievements, getLevelProgress, getLevelName } = useGameStore();
+
+  const [activeTab, setActiveTab] = useState<'achievements' | 'decorations'>('achievements');
+  
+  const totalExpense = getTotalExpenseThisMonth();
+  const hp = getHP(totalExpense);
+  const levelProgress = getLevelProgress();
+  
+  return (
+    <div className="min-h-screen bg-bg-light font-display pb-32 relative overflow-hidden">
+      
+      {/* Background Elements */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 w-full h-[500px] bg-gradient-to-b from-orange-50/80 to-transparent"></div>
+        <div className="absolute top-[-100px] left-[-100px] w-[300px] h-[300px] bg-red-300/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-[50px] right-[-50px] w-[200px] h-[200px] bg-yellow-300/10 rounded-full blur-3xl"></div>
+      </div>
+
+      {/* Header */}
+      <header className="relative z-10 px-6 pt-12 pb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Benteng</h1>
+          <p className="text-gray-500 text-sm">Status pertahanan & misi</p>
+        </div>
+        <div className="w-10 h-10 glass-card rounded-xl flex items-center justify-center text-primary shadow-soft">
+          <span className="material-symbols-outlined">fort</span>
+        </div>
+      </header>
+
+      <main className="px-6 relative z-10 flex flex-col gap-6">
+        
+        {/* Fortress Hero Section */}
+        <div className="glass-card rounded-[40px] p-6 relative overflow-hidden shadow-soft">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent pointer-events-none"></div>
+          
+          <div className="relative z-10 flex flex-col items-center">
+            <Fortress3D hp={hp} level={level} className="transform scale-90 -my-4" />
+            
+            <div className="text-center mt-2 w-full">
+              <div className="inline-flex items-center gap-2 bg-white/50 backdrop-blur-sm px-3 py-1 rounded-full border border-white/60 shadow-sm mb-2">
+                <span className="text-xs font-bold text-primary uppercase tracking-wider">Lvl {level}</span>
+                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                <span className="text-xs font-bold text-gray-600">{getLevelName()}</span>
+              </div>
+              
+              <div className="relative h-4 w-full bg-gray-100 rounded-full overflow-hidden shadow-inner mt-2">
+                <div 
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-purple-400"
+                  style={{ width: `${levelProgress.percentage}%` }}
+                ></div>
+                <div className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white/90 drop-shadow-md">
+                  {levelProgress.current} / {levelProgress.max} XP
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="glass-card p-3 rounded-2xl flex flex-col items-center justify-center gap-1 shadow-sm">
+            <span className="material-symbols-outlined text-success text-2xl">favorite</span>
+            <span className="text-lg font-black text-gray-800">{hp}%</span>
+            <span className="text-[10px] text-gray-400 font-bold uppercase">Health</span>
+          </div>
+          <div className="glass-card p-3 rounded-2xl flex flex-col items-center justify-center gap-1 shadow-sm">
+            <span className="material-symbols-outlined text-warning text-2xl">local_fire_department</span>
+            <span className="text-lg font-black text-gray-800">{streak}</span>
+            <span className="text-[10px] text-gray-400 font-bold uppercase">Streak</span>
+          </div>
+          <div className="glass-card p-3 rounded-2xl flex flex-col items-center justify-center gap-1 shadow-sm">
+            <span className="material-symbols-outlined text-primary text-2xl">hotel_class</span>
+            <span className="text-lg font-black text-gray-800">{xp}</span>
+            <span className="text-[10px] text-gray-400 font-bold uppercase">Total XP</span>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex bg-gray-200/50 p-1 rounded-xl">
+          <button
+            onClick={() => setActiveTab('achievements')}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+              activeTab === 'achievements' ? 'bg-white text-primary shadow-sm' : 'text-gray-500'
+            }`}
+          >
+            Pencapaian
+          </button>
+          <button
+            onClick={() => setActiveTab('decorations')}
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+              activeTab === 'decorations' ? 'bg-white text-primary shadow-sm' : 'text-gray-500'
+            }`}
+          >
+            Dekorasi
+          </button>
+        </div>
+
+        {/* Content List */}
+        <div className="flex flex-col gap-3 min-h-[200px]">
+          {activeTab === 'achievements' ? (
+            ACHIEVEMENTS.map((achievement, index) => {
+              const isUnlocked = achievements.includes(achievement.id);
+              return (
+                <motion.div
+                  key={achievement.id}
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`glass-card p-4 rounded-2xl flex items-center gap-4 ${
+                    !isUnlocked ? 'opacity-60 grayscale' : 'border-l-4 border-l-primary'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    isUnlocked ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-400'
+                  }`}>
+                    <span className="material-symbols-outlined text-xl">
+                      {isUnlocked ? achievement.icon : 'lock'}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-800">{achievement.label}</h3>
+                    <p className="text-xs text-gray-500">{achievement.description}</p>
+                  </div>
+                </motion.div>
+              );
+            })
+          ) : (
+            <div className="text-center py-10 glass-card rounded-2xl border-dashed">
+              <span className="material-symbols-outlined text-4xl text-gray-300 mb-2">construction</span>
+              <p className="text-sm text-gray-500 font-medium">Fitur Dekorasi Segera Hadir!</p>
+              <p className="text-xs text-gray-400 mt-1">Naikkan level untuk membuka item baru.</p>
+            </div>
+          )}
+        </div>
+
+      </main>
+
+      <BottomNav />
+    </div>
+  );
+}

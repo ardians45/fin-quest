@@ -1,0 +1,341 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { BottomNav } from '@/components/layout/BottomNav';
+import { useBudgetStore, useTransactionStore, useGameStore } from '@/stores';
+
+export default function ProfilePage() {
+  const router = useRouter();
+  const { monthlyBudget, setMonthlyBudget } = useBudgetStore();
+  const { transactions } = useTransactionStore();
+  const { xp, level, streak, achievements, getLevelName, getLevelProgress } = useGameStore();
+  
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [newBudget, setNewBudget] = useState(monthlyBudget.toString());
+  const [notifications, setNotifications] = useState(true);
+  
+  const levelProgress = getLevelProgress();
+
+  const formatCurrency = (value: number) => 
+    new Intl.NumberFormat('id-ID').format(value);
+
+  const handleSaveBudget = () => {
+    const budget = Number(newBudget.replace(/\D/g, ''));
+    if (budget >= 100000) {
+      setMonthlyBudget(budget);
+      setShowBudgetModal(false);
+    }
+  };
+
+  const handleDeleteAllData = () => {
+    localStorage.clear();
+    location.reload(); // Force reload to clear stores from memory if needed or just redirect
+    router.push('/onboarding');
+  };
+
+  const handleExport = (format: 'json' | 'csv') => {
+    const data = {
+      transactions,
+      budget: monthlyBudget,
+      exportedAt: new Date().toISOString(),
+    };
+    
+    let content: string;
+    let filename: string;
+    let mimeType: string;
+    
+    if (format === 'json') {
+      content = JSON.stringify(data, null, 2);
+      filename = `fin-quest-export-${new Date().toISOString().split('T')[0]}.json`;
+      mimeType = 'application/json';
+    } else {
+      const headers = ['Tanggal', 'Tipe', 'Jumlah', 'Kategori', 'Catatan'];
+      const rows = transactions.map(t => [
+        t.date,
+        t.type === 'expense' ? 'Pengeluaran' : 'Pemasukan',
+        t.amount,
+        t.category,
+        t.note || '',
+      ]);
+      content = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      filename = `fin-quest-export-${new Date().toISOString().split('T')[0]}.csv`;
+      mimeType = 'text/csv';
+    }
+    
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="min-h-screen bg-bg-light font-display pb-32 relative overflow-hidden">
+      
+      {/* Background Elements */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 w-full h-[400px] bg-gradient-to-b from-primary/10 to-transparent"></div>
+        <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] bg-primary/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-[100px] left-[-50px] w-[200px] h-[200px] bg-blue-300/20 rounded-full blur-3xl"></div>
+      </div>
+
+      {/* Header */}
+      <header className="relative z-10 px-6 pt-12 pb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Profil Komandan</h1>
+          <p className="text-gray-500 text-sm">Kelola akun & data</p>
+        </div>
+        <button className="w-10 h-10 glass-card rounded-xl flex items-center justify-center text-primary shadow-soft">
+          <span className="material-symbols-outlined">settings</span>
+        </button>
+      </header>
+
+      <main className="px-6 relative z-10 flex flex-col gap-6">
+        
+        {/* Profile Card */}
+        <div className="glass-card rounded-[32px] p-6 relative overflow-hidden shadow-soft">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-[100px]"></div>
+          
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-purple-600 p-1 shadow-glow relative">
+              <div className="w-full h-full bg-white rounded-full flex items-center justify-center overflow-hidden">
+                <span className="material-symbols-outlined text-5xl text-gray-300">person</span>
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-gold rounded-full border-2 border-white flex items-center justify-center shadow-sm">
+                <span className="text-xs font-bold text-white mb-0.5">{level}</span>
+              </div>
+            </div>
+            
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-gray-900">Guest User</h2>
+              <div className="bg-primary/5 inline-block px-2 py-0.5 rounded-lg border border-primary/10 mb-2">
+                <p className="text-xs font-bold text-primary">{getLevelName()}</p>
+              </div>
+              
+              {/* XP Bar */}
+              <div className="relative h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div 
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-purple-400"
+                  style={{ width: `${levelProgress.percentage}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between mt-1">
+                <span className="text-[10px] text-gray-400 font-bold">{xp} XP</span>
+                <span className="text-[10px] text-gray-400 font-bold">Next: {levelProgress.max}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 mt-6 pt-6 border-t border-gray-100">
+            <div className="text-center">
+              <span className="block text-xl font-bold text-gray-800">{transactions.length}</span>
+              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Transaksi</span>
+            </div>
+            <div className="text-center border-l border-gray-100">
+              <span className="block text-xl font-bold text-gray-800">{streak}</span>
+              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Streak</span>
+            </div>
+            <div className="text-center border-l border-gray-100">
+              <span className="block text-xl font-bold text-gray-800">{achievements.length}</span>
+              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Medali</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Settings Menu */}
+        <div className="flex flex-col gap-4">
+          
+          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider pl-2">Pengaturan Umum</h3>
+          
+          <button 
+            onClick={() => setShowBudgetModal(true)}
+            className="glass-card p-4 rounded-2xl flex items-center justify-between group active:scale-[0.98] transition-transform"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center">
+                <span className="material-symbols-outlined">account_balance_wallet</span>
+              </div>
+              <div className="text-left">
+                <p className="font-bold text-gray-800 text-sm">Atur Anggaran</p>
+                <p className="text-xs text-gray-400">Rp {formatCurrency(monthlyBudget)}</p>
+              </div>
+            </div>
+            <span className="material-symbols-outlined text-gray-300 group-hover:text-primary transition-colors">chevron_right</span>
+          </button>
+
+          <div className="glass-card rounded-2xl overflow-hidden divide-y divide-gray-50">
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
+                  <span className="material-symbols-outlined">notifications</span>
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-gray-800 text-sm">Notifikasi Harian</p>
+                  <p className="text-xs text-gray-400">Pengingat catat transaksi</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setNotifications(!notifications)}
+                className={`w-12 h-6 rounded-full relative transition-colors ${notifications ? 'bg-success' : 'bg-gray-200'}`}
+              >
+                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${notifications ? 'left-7' : 'left-1'}`}></div>
+              </button>
+            </div>
+          </div>
+
+          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider pl-2 mt-2">Data & Keamanan</h3>
+          
+          <div className="glass-card rounded-2xl overflow-hidden divide-y divide-gray-50">
+            <button 
+              onClick={() => handleExport('json')}
+              className="w-full p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-green-50 text-green-500 flex items-center justify-center">
+                  <span className="material-symbols-outlined">description</span>
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-gray-800 text-sm">Backup Data (JSON)</p>
+                </div>
+              </div>
+              <span className="material-symbols-outlined text-gray-300">download</span>
+            </button>
+            <button 
+              onClick={() => handleExport('csv')}
+              className="w-full p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-green-50 text-green-500 flex items-center justify-center">
+                  <span className="material-symbols-outlined">table_view</span>
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-gray-800 text-sm">Export Excel (CSV)</p>
+                </div>
+              </div>
+              <span className="material-symbols-outlined text-gray-300">download</span>
+            </button>
+          </div>
+
+          <button 
+            onClick={() => setShowDeleteModal(true)}
+            className="glass-card p-4 rounded-2xl flex items-center gap-3 group active:scale-[0.98] transition-transform border border-danger/10 text-danger hover:bg-danger/5"
+          >
+            <div className="w-10 h-10 rounded-xl bg-danger/10 flex items-center justify-center">
+              <span className="material-symbols-outlined">delete_forever</span>
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-sm">Hapus Semua Data</p>
+              <p className="text-xs opacity-70">Aksi ini tidak dapat dibatalkan</p>
+            </div>
+          </button>
+          
+          <div className="text-center py-6 text-gray-400">
+            <p className="text-[10px] font-bold tracking-widest uppercase">Fin-Quest Project v1.0</p>
+          </div>
+
+        </div>
+      </main>
+
+      {/* Budget Modal */}
+      <AnimatePresence>
+        {showBudgetModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-[32px] p-6 w-full max-w-xs shadow-2xl"
+            >
+              <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">Atur Anggaran Bulanan</h3>
+              
+              <div className="bg-gray-50 rounded-2xl p-4 mb-6 border border-gray-100">
+                <span className="text-xs text-gray-400 font-bold uppercase mb-1 block">Target Baru</span>
+                <div className="flex items-center">
+                  <span className="text-gray-400 font-bold mr-2">Rp</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={formatCurrency(Number(newBudget.replace(/\D/g, '')))}
+                    onChange={(e) => setNewBudget(e.target.value)}
+                    className="bg-transparent text-xl font-black text-gray-900 w-full focus:outline-none"
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowBudgetModal(false)}
+                  className="flex-1 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleSaveBudget}
+                  className="flex-1 py-3 rounded-xl bg-primary text-white font-bold shadow-glow hover:scale-[1.02] transition-transform"
+                >
+                  Simpan
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Modal */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-[32px] p-6 w-full max-w-xs shadow-2xl text-center"
+            >
+              <div className="w-16 h-16 bg-danger/10 text-danger rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="material-symbols-outlined text-3xl">warning</span>
+              </div>
+              
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Hapus Semua Data?</h3>
+              <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+                Semua progres level, transaksi, dan medali akan hilang permanen. Kamu yakin?
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleDeleteAllData}
+                  className="flex-1 py-3 rounded-xl bg-danger text-white font-bold shadow-lg hover:scale-[1.02] transition-transform"
+                >
+                  Ya, Hapus
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <BottomNav />
+    </div>
+  );
+}
