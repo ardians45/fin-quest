@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { useBudgetStore, useTransactionStore, useGameStore } from '@/stores';
+import { DECORATION_CATALOG } from '@/stores/gameStore';
 import { Fortress3D } from '@/components/visuals/Fortress3D';
 
 const ACHIEVEMENTS = [
@@ -15,10 +16,18 @@ const ACHIEVEMENTS = [
   { id: 'saver_pro', label: 'Saver Pro', icon: 'savings', description: 'Hemat 30% dari budget' },
 ];
 
+const TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  flag: { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200' },
+  torch: { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200' },
+  banner: { bg: 'bg-purple-50', text: 'text-purple-600', border: 'border-purple-200' },
+  garden: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-200' },
+  fountain: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200' },
+};
+
 export default function BattlePage() {
   const { getHP } = useBudgetStore();
   const { getTotalExpenseThisMonth } = useTransactionStore();
-  const { xp, level, streak, achievements, getLevelProgress, getLevelName } = useGameStore();
+  const { xp, level, streak, achievements, activeDecorations, toggleDecoration, isDecorationUnlocked, getLevelProgress, getLevelName } = useGameStore();
 
   const [activeTab, setActiveTab] = useState<'achievements' | 'decorations'>('achievements');
   
@@ -54,7 +63,7 @@ export default function BattlePage() {
           <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent pointer-events-none"></div>
           
           <div className="relative z-10 flex flex-col items-center">
-            <Fortress3D hp={hp} level={level} className="transform scale-90 -my-4" />
+            <Fortress3D hp={hp} level={level} activeDecorations={activeDecorations} className="transform scale-90 -my-4" />
             
             <div className="text-center mt-2 w-full">
               <div className="inline-flex items-center gap-2 bg-white/50 backdrop-blur-sm px-3 py-1 rounded-full border border-white/60 shadow-sm mb-2">
@@ -107,11 +116,16 @@ export default function BattlePage() {
           </button>
           <button
             onClick={() => setActiveTab('decorations')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 ${
               activeTab === 'decorations' ? 'bg-white text-primary shadow-sm' : 'text-gray-500'
             }`}
           >
             Dekorasi
+            {activeDecorations.length > 0 && (
+              <span className="bg-primary text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                {activeDecorations.length}
+              </span>
+            )}
           </button>
         </div>
 
@@ -145,10 +159,87 @@ export default function BattlePage() {
               );
             })
           ) : (
-            <div className="text-center py-10 glass-card rounded-2xl border-dashed">
-              <span className="material-symbols-outlined text-4xl text-gray-300 mb-2">construction</span>
-              <p className="text-sm text-gray-500 font-medium">Fitur Dekorasi Segera Hadir!</p>
-              <p className="text-xs text-gray-400 mt-1">Naikkan level untuk membuka item baru.</p>
+            /* ===== DECORATION INVENTORY GRID ===== */
+            <div className="flex flex-col gap-4">
+              {/* Active count */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                  {activeDecorations.length} / {DECORATION_CATALOG.length} Aktif
+                </span>
+                <span className="text-[10px] text-gray-400">Tap untuk toggle</span>
+              </div>
+
+              {/* Decoration Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                {DECORATION_CATALOG.map((item, index) => {
+                  const unlocked = isDecorationUnlocked(item.id);
+                  const isActive = activeDecorations.includes(item.id);
+                  const typeColor = TYPE_COLORS[item.type] || TYPE_COLORS.flag;
+
+                  return (
+                    <motion.button
+                      key={item.id}
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: index * 0.07 }}
+                      onClick={() => unlocked && toggleDecoration(item.id)}
+                      disabled={!unlocked}
+                      className={`relative p-4 rounded-2xl flex flex-col items-center gap-2 text-center transition-all active:scale-95 ${
+                        !unlocked
+                          ? 'glass-card opacity-50 grayscale cursor-not-allowed'
+                          : isActive
+                            ? `${typeColor.bg} border-2 ${typeColor.border} shadow-md`
+                            : 'glass-card hover:bg-white/80 border border-transparent hover:border-gray-200'
+                      }`}
+                    >
+                      {/* Active indicator */}
+                      {isActive && (
+                        <div className="absolute top-2 right-2">
+                          <span className={`material-symbols-outlined text-sm ${typeColor.text}`}>check_circle</span>
+                        </div>
+                      )}
+                      
+                      {/* Lock overlay */}
+                      {!unlocked && (
+                        <div className="absolute top-2 right-2 flex items-center gap-1 bg-gray-200/80 px-1.5 py-0.5 rounded-md">
+                          <span className="material-symbols-outlined text-[10px] text-gray-500">lock</span>
+                          <span className="text-[9px] font-bold text-gray-500">Lv.{item.requiredLevel}</span>
+                        </div>
+                      )}
+
+                      {/* Icon */}
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                        !unlocked 
+                          ? 'bg-gray-100 text-gray-400' 
+                          : isActive 
+                            ? `${typeColor.bg} ${typeColor.text}` 
+                            : 'bg-gray-50 text-gray-500'
+                      }`}>
+                        <span className="material-symbols-outlined text-2xl">
+                          {unlocked ? item.icon : 'lock'}
+                        </span>
+                      </div>
+
+                      {/* Text */}
+                      <div>
+                        <h4 className={`text-xs font-bold ${unlocked ? 'text-gray-800' : 'text-gray-400'}`}>
+                          {item.name}
+                        </h4>
+                        <p className="text-[10px] text-gray-400 leading-tight mt-0.5">
+                          {unlocked ? item.description : `Buka di Level ${item.requiredLevel}`}
+                        </p>
+                      </div>
+
+                      {/* Type badge */}
+                      <span className={`text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                        unlocked ? `${typeColor.bg} ${typeColor.text}` : 'bg-gray-100 text-gray-400'
+                      }`}>
+                        {item.type}
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

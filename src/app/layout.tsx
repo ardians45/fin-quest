@@ -15,13 +15,13 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Fin-Quest | Jaga Keuanganmu dengan Seru!",
+  title: "MyDuit Quest | Jaga Keuanganmu dengan Seru!",
   description: "Aplikasi pencatat keuangan dengan gamifikasi. Bangun bentengmu, jaga HP-mu, dan raih achievement!",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Fin-Quest",
+    title: "MyDuit Quest",
   },
 };
 
@@ -39,11 +39,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={`${inter.variable} ${plusJakarta.variable}`}>
+    <html lang="id" className={`${inter.variable} ${plusJakarta.variable}`} suppressHydrationWarning>
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" />
       </head>
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         {children}
       </body>
     </html>

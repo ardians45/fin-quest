@@ -137,8 +137,9 @@ export default function StatsPage() {
         <div className="absolute top-[-100px] left-[-100px] w-[300px] h-[300px] bg-purple-300/20 rounded-full blur-3xl"></div>
         <div className="absolute top-[50px] right-[-50px] w-[200px] h-[200px] bg-blue-300/20 rounded-full blur-3xl"></div>
       </div>
-
-      {/* Header */}
+      {/* Desktop Container Wrapper */}
+      <div className="flex flex-col md:max-w-5xl md:mx-auto md:px-6 relative z-10 w-full">
+        {/* Header */}
       <header className="relative z-10 px-6 pt-12 pb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Statistik</h1>
@@ -154,7 +155,7 @@ export default function StatsPage() {
 
       <main className="px-6 relative z-10 flex flex-col gap-6">
         
-        {/* Summary Card - Financial Overview */}
+        {/* Summary Card - Financial Overview with Pie Chart */}
         <motion.div 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -162,52 +163,131 @@ export default function StatsPage() {
         >
           <div className="absolute right-0 top-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full pointer-events-none"></div>
           
-          <div className="flex flex-col gap-4 relative z-10">
+          <div className="flex flex-col gap-5 relative z-10">
             <span className="text-gray-500 text-sm font-bold uppercase tracking-wider">Ringkasan Bulan Ini</span>
             
-            {/* Income, Expense, Net Balance */}
-            <div className="grid grid-cols-3 gap-3">
+            {/* Pie Chart + Stats Row */}
+            <div className="flex items-center gap-5">
+              
+              {/* Animated SVG Donut Chart */}
+              <div className="relative w-[130px] h-[130px] flex-shrink-0">
+                <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90 drop-shadow-sm">
+                  {categoryBreakdown.length > 0 ? (
+                    (() => {
+                      const PIE_COLORS = ['#ec4899', '#3b82f6', '#f97316', '#22c55e', '#a855f7', '#eab308', '#06b6d4', '#ef4444'];
+                      let cumulative = 0;
+                      const r = 35;
+                      const circumference = 2 * Math.PI * r;
+                      return categoryBreakdown.map((item, index) => {
+                        const dashLength = (item.percentage / 100) * circumference;
+                        const dashOffset = -(cumulative / 100) * circumference;
+                        cumulative += item.percentage;
+                        
+                        return (
+                          <motion.circle
+                            key={item.category}
+                            cx="50"
+                            cy="50"
+                            r={r}
+                            fill="transparent"
+                            stroke={PIE_COLORS[index % PIE_COLORS.length]}
+                            strokeWidth="18"
+                            strokeDasharray={`${dashLength} ${circumference}`}
+                            strokeDashoffset={dashOffset}
+                            initial={{ strokeDasharray: `0 ${circumference}` }}
+                            animate={{ strokeDasharray: `${dashLength} ${circumference}` }}
+                            transition={{ duration: 1, delay: index * 0.1, ease: "easeOut" }}
+                            className="cursor-pointer hover:opacity-80 transition-opacity"
+                          />
+                        );
+                      });
+                    })()
+                  ) : (
+                    // Empty State Check
+                    <motion.circle
+                      cx="50" cy="50" r="35"
+                      fill="transparent" stroke="#e2e8f0" strokeWidth="18"
+                      strokeDasharray={`${2 * Math.PI * 35} ${2 * Math.PI * 35}`}
+                      initial={{ strokeDasharray: `0 ${2 * Math.PI * 35}` }}
+                      animate={{ strokeDasharray: `${2 * Math.PI * 35} ${2 * Math.PI * 35}` }}
+                      transition={{ duration: 1 }}
+                    />
+                  )}
+                </svg>
+
+                {/* Center Label inside Donut */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total</span>
+                  <span className="text-sm font-black text-gray-800 shrink-to-fit">
+                    {totalExpense > 0 ? `${(totalExpense / 1000).toFixed(0)}K` : '0'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Legend + Quick Stats Right Side */}
+              <div className="flex-1 flex flex-col gap-2 min-w-0">
+                {categoryBreakdown.length > 0 ? (
+                  categoryBreakdown.slice(0, 4).map((item, index) => {
+                    const PIE_COLORS_HEX = ['#ec4899', '#3b82f6', '#f97316', '#22c55e', '#a855f7'];
+                    return (
+                      <div key={item.category} className="flex flex-row items-center justify-between mb-1">
+                        <div className="flex flex-row items-center gap-2 flex-1 min-w-0 pr-2">
+                          <div 
+                            className="w-2 h-2 rounded-full flex-shrink-0" 
+                            style={{ backgroundColor: PIE_COLORS_HEX[index % PIE_COLORS_HEX.length] }}
+                          ></div>
+                          <span className="text-[11px] font-bold text-gray-700 capitalize truncate leading-none">{item.category}</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-gray-400 leading-none">{Math.round(item.percentage)}%</span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-xs text-gray-400">Belum ada data</p>
+                )}
+                {categoryBreakdown.length > 4 && (
+                  <span className="text-[10px] text-gray-400 pl-4 mt-1">+{categoryBreakdown.length - 4} lainnya</span>
+                )}
+              </div>
+            </div>
+            
+            {/* Income, Expense, Net Balance Bottom Slice */}
+            <div className="grid grid-cols-3 gap-3 pt-4 mt-1 border-t border-gray-100">
               {/* Income */}
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-gray-400 uppercase">Pemasukan</span>
-                <div className="flex flex-col mt-1">
-                  <span className="text-xs font-bold text-success">+Rp {formatCurrency(totalIncome)}</span>
-                </div>
+                <span className="text-[9px] font-bold text-gray-400 uppercase">Pemasukan</span>
+                <span className="text-xs font-bold text-success mt-1 truncate">+Rp {formatCurrency(totalIncome)}</span>
               </div>
               
               {/* Expense */}
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-gray-400 uppercase">Pengeluaran</span>
-                <div className="flex flex-col mt-1">
-                  <span className="text-xs font-bold text-danger">-Rp {formatCurrency(totalExpense)}</span>
-                </div>
+              <div className="flex flex-col text-center border-x border-gray-100 px-2">
+                <span className="text-[9px] font-bold text-gray-400 uppercase">Pengeluaran</span>
+                <span className="text-xs font-bold text-danger mt-1 truncate">-Rp {formatCurrency(totalExpense)}</span>
               </div>
               
               {/* Net Balance */}
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-gray-400 uppercase">Saldo Bersih</span>
-                <div className="flex flex-col mt-1">
-                  <span className={`text-xs font-bold ${netBalance >= 0 ? 'text-success' : 'text-danger'}`}>
-                    {netBalance >= 0 ? '+' : ''}Rp {formatCurrency(Math.abs(netBalance))}
-                  </span>
-                </div>
+              <div className="flex flex-col text-right">
+                <span className="text-[9px] font-bold text-gray-400 uppercase">Sisa</span>
+                <span className={`text-xs font-bold mt-1 truncate ${netBalance >= 0 ? 'text-gray-800' : 'text-danger'}`}>
+                  {netBalance >= 0 ? '' : '-'}Rp {formatCurrency(Math.abs(netBalance))}
+                </span>
               </div>
             </div>
 
             {/* Budget Progress Bar */}
-            <div className="flex flex-col gap-2 pt-2 border-t border-gray-100">
-              <div className="flex justify-between text-xs font-bold text-gray-500">
-                <span>Penggunaan Budget</span>
-                <span>{monthlyBudget > 0 ? Math.round((totalExpense / monthlyBudget) * 100) : 0}%</span>
+            <div className="flex flex-col gap-2 pt-3 border-t border-gray-100">
+              <div className="flex justify-between items-end">
+                <span className="text-[10px] font-bold text-gray-500">Penggunaan Budget</span>
+                <span className="text-xs font-bold text-gray-800">{monthlyBudget > 0 ? Math.round((totalExpense / monthlyBudget) * 100) : 0}%</span>
               </div>
-              <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden shadow-inner">
+              <div className="h-2.5 w-full bg-gray-100 rounded-full overflow-hidden shadow-inner">
                 <div 
-                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full shadow-lg transition-all duration-1000"
+                  className={`h-full rounded-full transition-all duration-1000 ${
+                    monthlyBudget > 0 && (totalExpense / monthlyBudget) > 0.9 ? 'bg-red-500' : 
+                    monthlyBudget > 0 && (totalExpense / monthlyBudget) > 0.7 ? 'bg-amber-400' : 'bg-gradient-to-r from-indigo-500 to-purple-500'
+                  }`}
                   style={{ width: `${monthlyBudget > 0 ? Math.min((totalExpense / monthlyBudget) * 100, 100) : 0}%` }}
                 ></div>
-              </div>
-              <div className="text-right text-[10px] text-gray-400">
-                dari Rp {formatCurrency(monthlyBudget)}
               </div>
             </div>
           </div>
@@ -369,9 +449,11 @@ export default function StatsPage() {
           </div>
         </section>
 
-      </main>
+        </main>
+      </div>
       
-      <div className="fixed bottom-[90px] left-0 w-full flex justify-center pointer-events-none z-40">
+      {/* Floating FAB - Adjusted for Desktop */}
+      <div className="fixed bottom-[90px] left-0 w-full flex justify-center pointer-events-none z-40 md:bottom-10 md:left-auto md:right-10 md:w-auto md:justify-end">
         <button 
           onClick={() => router.push('/add')}
           className="pointer-events-auto w-16 h-16 bg-gradient-to-br from-primary to-primary-dark text-white rounded-full shadow-glow flex items-center justify-center transition-transform hover:scale-110 active:scale-95 group focus:outline-none focus:ring-4 focus:ring-primary/30 border-4 border-white/30 backdrop-blur-sm"

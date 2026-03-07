@@ -10,24 +10,16 @@ export default function DashboardPage() {
   const router = useRouter();
   const { isOnboarded, monthlyBudget, getHP, getHPStatus, getRemainingBudget, _hasHydrated } = useBudgetStore();
   const { transactions, getTransactionsByDate } = useTransactionStore();
-  const { streak, level, xp, getLevelName } = useGameStore();
+  const { streak, level, xp, getLevelName, activeDecorations, avatar } = useGameStore();
   
   const nextLevelXp = level * 100;
   
   // Mounted state to avoid hydration mismatch
   const [mounted, setMounted] = useState(false);
-
-  // QC / Debug State
-  const [debugLevel, setDebugLevel] = useState(1);
   
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // Sync debug level with actual level on mount
-  useEffect(() => {
-     if(level) setDebugLevel(level);
-  }, [level]);
 
   useEffect(() => {
     // Only redirect AFTER hydration is complete
@@ -184,15 +176,18 @@ export default function DashboardPage() {
                 <div className="glass-card text-gray-800 text-[10px] font-bold py-1.5 px-3 rounded-xl rounded-br-none shadow-lg mb-1 mr-8 whitespace-nowrap animate-bounce">
                   Pertahanan stabil!
                 </div>
-                <div className="w-14 h-14 rounded-xl border-2 border-white shadow-xl overflow-hidden bg-purple-50 relative group cursor-pointer transform rotate-3 hover:rotate-0 transition-all">
-                  <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" className="w-full h-full object-cover" />
+                <div 
+                  className="w-14 h-14 rounded-xl border-2 border-white shadow-xl overflow-hidden bg-purple-50 relative group cursor-pointer transform rotate-3 hover:rotate-0 transition-all"
+                  onClick={() => router.push('/profile')}
+                >
+                  <img src={avatar || "/avatar.png"} alt="Profile" className="w-full h-full object-cover" />
                 </div>
               </div>
             </div>
 
-            {/* Fortress Visual (USING DEBUG LEVEL) */}
+            {/* Fortress Visual */}
             <div className="relative w-full aspect-square max-w-[320px] mx-auto md:max-w-full md:aspect-[4/5] flex items-center justify-center -mt-4 md:mt-0">
-               <Fortress3D hp={hp} level={debugLevel} className="transform scale-110 md:scale-125 transition-transform duration-700" />
+               <Fortress3D hp={hp} level={level} activeDecorations={activeDecorations} className="transform scale-110 md:scale-125 transition-transform duration-700" />
             </div>
 
             {/* Floating Action Buttons Overlay (Keep existing) */}
@@ -215,15 +210,29 @@ export default function DashboardPage() {
                  <div className="w-12 h-14 bg-blue-500 rounded-lg shadow-[0_8px_0_#1e3a8a] border-2 border-blue-400 flex items-center justify-center relative">
                    <span className="material-symbols-outlined text-white text-lg">savings</span>
                    <div className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-[8px] font-bold px-1 rounded-full border border-white shadow-sm">
-                     Lvl {debugLevel}
+                     Lvl {level}
                    </div>
                  </div>
                </div>
  
-               {/* Bottom Left Lock Icon */}
+               {/* Bottom Left Lock Icon / Decoration Link */}
                <div className="absolute bottom-[25%] left-[15%] z-20 pointer-events-auto">
-                 <button className="w-12 h-12 glass-card rounded-2xl flex items-center justify-center hover:border-primary hover:text-primary transition-colors group relative">
-                   <span className="material-symbols-outlined text-gray-400 group-hover:text-primary">lock</span>
+                 <button 
+                   onClick={() => router.push('/battle?tab=dekorasi')}
+                   className="w-12 h-12 glass-card rounded-2xl flex items-center justify-center hover:border-primary hover:text-primary transition-colors group relative"
+                 >
+                   <span className={`material-symbols-outlined transition-colors ${level >= 2 ? 'text-primary' : 'text-gray-400 group-hover:text-primary'}`}>
+                     {level >= 2 ? 'palette' : 'lock'}
+                   </span>
+                   {level < 2 ? (
+                     <span className="absolute -bottom-4 bg-gray-800 text-white text-[8px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                       Buka di Lv 2
+                     </span>
+                   ) : (
+                     <span className="absolute -bottom-4 bg-gray-800 text-white text-[8px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                       Dekorasi
+                     </span>
+                   )}
                  </button>
                </div>
             </div>
@@ -359,25 +368,6 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      {/* QC FLOATING PANEL (Fixed Bottom Left) */}
-      <div className="fixed bottom-24 left-4 z-50 bg-white/90 backdrop-blur-sm p-3 rounded-2xl shadow-xl border border-pink-200/50 flex flex-col gap-2 w-40 animate-slide-up hover:opacity-100 opacity-80 transition-opacity">
-        <label className="text-[10px] font-bold text-slate-500 uppercase flex justify-between">
-          <span>🛠️ Test Level:</span>
-          <span className="text-primary font-black bg-primary/10 px-1.5 rounded text-xs">{debugLevel}</span>
-        </label>
-        <input 
-          type="range" 
-          min="1" 
-          max="10" 
-          value={debugLevel} 
-          onChange={(e) => setDebugLevel(parseInt(e.target.value))}
-          className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
-        />
-        <div className="flex justify-between text-[8px] text-gray-400 px-0.5 font-medium">
-           <span>Lv1</span>
-           <span>Lv10</span>
-        </div>
-      </div>
 
       {/* Custom Bottom Navigation */}
       <BottomNav />

@@ -64,7 +64,7 @@ function AddTransactionContent() {
     }
     
     setIsSuccess(true);
-    setTimeout(() => router.back(), 1500);
+    setTimeout(() => router.back(), 800); // Faster redirect
   };
   
   return (
@@ -77,15 +77,29 @@ function AddTransactionContent() {
         <div className="absolute bottom-[0px] left-[-50px] w-[200px] h-[200px] bg-pink-300/20 rounded-full blur-3xl"></div>
       </div>
 
-      {isSuccess && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/90 backdrop-blur-xl animate-fade-in">
-          <div className="w-24 h-24 bg-success/10 rounded-full flex items-center justify-center mb-4 animate-bounce">
-            <span className="material-symbols-outlined text-success text-5xl">check_circle</span>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Tersimpan!</h2>
-          <p className="text-gray-500">Transaksi berhasil dicatat.</p>
-        </div>
-      )}
+      <AnimatePresence>
+        {isSuccess && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/60 backdrop-blur-md"
+          >
+            <motion.div 
+              initial={{ scale: 0.5, y: 50, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              className="glass-card p-8 rounded-[32px] flex flex-col items-center shadow-xl border-2 border-success/20"
+            >
+              <div className="w-20 h-20 bg-gradient-to-br from-success to-emerald-600 rounded-full flex items-center justify-center mb-4 shadow-glow">
+                <span className="material-symbols-outlined text-white text-4xl">done_all</span>
+              </div>
+              <h2 className="text-2xl font-black text-gray-900 mb-1">Berhasil!</h2>
+              <p className="text-sm font-bold text-gray-500">+10 XP Bertambah</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Header */}
       <header className="px-6 pt-8 pb-4 relative z-10 flex items-center justify-between">

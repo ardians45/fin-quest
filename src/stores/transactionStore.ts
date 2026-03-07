@@ -81,7 +81,7 @@ export const useTransactionStore = create<TransactionState>()(
       },
     }),
     {
-      name: 'fin-quest-transactions',
+      name: 'myduit-quest-transactions',
     }
   )
 );

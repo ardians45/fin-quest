@@ -1,20 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { useBudgetStore, useTransactionStore, useGameStore } from '@/stores';
 
+const AVATAR_OPTIONS = [
+  '/avatar.png',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix&backgroundColor=c0aede',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Aneka&backgroundColor=b6e3f4',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Mimi&backgroundColor=ffdfbf',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Robo&backgroundColor=d1d4f9',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Leo&backgroundColor=c0aede',
+];
+
 export default function ProfilePage() {
   const router = useRouter();
   const { monthlyBudget, setMonthlyBudget } = useBudgetStore();
   const { transactions } = useTransactionStore();
-  const { xp, level, streak, achievements, getLevelName, getLevelProgress } = useGameStore();
+  const { xp, level, streak, achievements, getLevelName, getLevelProgress, username, avatar, updateProfile } = useGameStore();
   
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  
   const [newBudget, setNewBudget] = useState(monthlyBudget.toString());
+  const [newUsername, setNewUsername] = useState(username || 'Komandan');
+  const [newAvatar, setNewAvatar] = useState(avatar || '/avatar.png');
   const [notifications, setNotifications] = useState(true);
   
   const levelProgress = getLevelProgress();
@@ -30,28 +43,40 @@ export default function ProfilePage() {
     }
   };
 
+  const handleSaveProfile = () => {
+    if (newUsername.trim().length > 0) {
+      updateProfile(newUsername.trim(), newAvatar);
+      setShowEditProfileModal(false);
+    }
+  };
+
   const handleDeleteAllData = () => {
     localStorage.clear();
     location.reload(); // Force reload to clear stores from memory if needed or just redirect
     router.push('/onboarding');
   };
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
   const handleExport = (format: 'json' | 'csv') => {
-    const data = {
-      transactions,
-      budget: monthlyBudget,
-      exportedAt: new Date().toISOString(),
-    };
-    
     let content: string;
     let filename: string;
     let mimeType: string;
     
     if (format === 'json') {
-      content = JSON.stringify(data, null, 2);
-      filename = `fin-quest-export-${new Date().toISOString().split('T')[0]}.json`;
+      // Export full state from localStorage for backup
+      const backupData = {
+        game: localStorage.getItem('myduit-quest-game'),
+        transactions: localStorage.getItem('myduit-quest-transactions'),
+        budget: localStorage.getItem('myduit-quest-budget'),
+        exportedAt: new Date().toISOString(),
+      };
+      
+      content = JSON.stringify(backupData, null, 2);
+      filename = `myduit-quest-backup-${new Date().toISOString().split('T')[0]}.json`;
       mimeType = 'application/json';
     } else {
+      // Export just transactions for CSV
       const headers = ['Tanggal', 'Tipe', 'Jumlah', 'Kategori', 'Catatan'];
       const rows = transactions.map(t => [
         t.date,
@@ -61,7 +86,7 @@ export default function ProfilePage() {
         t.note || '',
       ]);
       content = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-      filename = `fin-quest-export-${new Date().toISOString().split('T')[0]}.csv`;
+      filename = `myduit-quest-transactions-${new Date().toISOString().split('T')[0]}.csv`;
       mimeType = 'text/csv';
     }
     
@@ -72,6 +97,40 @@ export default function ProfilePage() {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const result = e.target?.result as string;
+        const backupData = JSON.parse(result);
+        
+        // Basic validation checking if it's our backup structure
+        if (backupData.game !== undefined && backupData.transactions !== undefined) {
+          if (backupData.game) localStorage.setItem('myduit-quest-game', backupData.game);
+          if (backupData.transactions) localStorage.setItem('myduit-quest-transactions', backupData.transactions);
+          if (backupData.budget) localStorage.setItem('myduit-quest-budget', backupData.budget);
+          
+          alert('Data berhasil dipulihkan! Halaman akan dimuat ulang.');
+          location.reload();
+        } else {
+          alert('Format file backup tidak valid.');
+        }
+      } catch (error) {
+        alert('Gagal membaca file backup.');
+        console.error('Import error:', error);
+      }
+    };
+    reader.readAsText(file);
+    
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -90,8 +149,15 @@ export default function ProfilePage() {
           <h1 className="text-2xl font-bold text-gray-900">Profil Komandan</h1>
           <p className="text-gray-500 text-sm">Kelola akun & data</p>
         </div>
-        <button className="w-10 h-10 glass-card rounded-xl flex items-center justify-center text-primary shadow-soft">
-          <span className="material-symbols-outlined">settings</span>
+        <button 
+          onClick={() => {
+            setNewUsername(username || 'Komandan');
+            setNewAvatar(avatar || '/avatar.png');
+            setShowEditProfileModal(true);
+          }}
+          className="w-10 h-10 glass-card rounded-xl flex items-center justify-center text-primary shadow-soft hover:bg-primary/10 transition-colors"
+        >
+          <span className="material-symbols-outlined">edit</span>
         </button>
       </header>
 
@@ -104,7 +170,7 @@ export default function ProfilePage() {
           <div className="flex items-center gap-4 relative z-10">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-purple-600 p-1 shadow-glow relative">
               <div className="w-full h-full bg-white rounded-full flex items-center justify-center overflow-hidden">
-                <span className="material-symbols-outlined text-5xl text-gray-300">person</span>
+                <img src={avatar || "/avatar.png"} alt="Profile Avatar" className="w-full h-full object-cover" />
               </div>
               <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-gold rounded-full border-2 border-white flex items-center justify-center shadow-sm">
                 <span className="text-xs font-bold text-white mb-0.5">{level}</span>
@@ -112,7 +178,7 @@ export default function ProfilePage() {
             </div>
             
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-gray-900">Guest User</h2>
+              <h2 className="text-xl font-bold text-gray-900 truncate max-w-[160px]">{username || 'Komandan'}</h2>
               <div className="bg-primary/5 inline-block px-2 py-0.5 rounded-lg border border-primary/10 mb-2">
                 <p className="text-xs font-bold text-primary">{getLevelName()}</p>
               </div>
@@ -131,18 +197,21 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 mt-6 pt-6 border-t border-gray-100">
-            <div className="text-center">
-              <span className="block text-xl font-bold text-gray-800">{transactions.length}</span>
-              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Transaksi</span>
+          <div className="grid grid-cols-3 gap-3 mt-6 pt-6 border-t border-gray-100">
+            <div className="flex flex-col items-center justify-center glass-card rounded-2xl py-3 px-1 shadow-sm hover:shadow-md transition-shadow">
+              <span className="material-symbols-outlined text-[22px] text-emerald-400 mb-1.5 drop-shadow-sm">receipt_long</span>
+              <span className="block text-2xl font-black text-gray-800 leading-none">{transactions.length}</span>
+              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-2">TRANSAKSI</span>
             </div>
-            <div className="text-center border-l border-gray-100">
-              <span className="block text-xl font-bold text-gray-800">{streak}</span>
-              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Streak</span>
+            <div className="flex flex-col items-center justify-center glass-card rounded-2xl py-3 px-1 shadow-sm hover:shadow-md transition-shadow">
+              <span className="material-symbols-outlined text-[22px] text-orange-400 mb-1.5 drop-shadow-sm">local_fire_department</span>
+              <span className="block text-2xl font-black text-gray-800 leading-none">{streak}</span>
+              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-2">STREAK</span>
             </div>
-            <div className="text-center border-l border-gray-100">
-              <span className="block text-xl font-bold text-gray-800">{achievements.length}</span>
-              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Medali</span>
+            <div className="flex flex-col items-center justify-center glass-card rounded-2xl py-3 px-1 shadow-sm hover:shadow-md transition-shadow">
+              <span className="material-symbols-outlined text-[22px] text-purple-500 mb-1.5 drop-shadow-sm">emoji_events</span>
+              <span className="block text-2xl font-black text-gray-800 leading-none">{achievements.length}</span>
+              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-2">MEDALI</span>
             </div>
           </div>
         </div>
@@ -206,11 +275,32 @@ export default function ProfilePage() {
               <span className="material-symbols-outlined text-gray-300">download</span>
             </button>
             <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
+                  <span className="material-symbols-outlined">upload_file</span>
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-gray-800 text-sm">Import Data (JSON)</p>
+                </div>
+              </div>
+              <span className="material-symbols-outlined text-gray-300">upload</span>
+            </button>
+            <input 
+              type="file" 
+              accept=".json" 
+              className="hidden" 
+              ref={fileInputRef} 
+              onChange={handleImport} 
+            />
+            <button 
               onClick={() => handleExport('csv')}
               className="w-full p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-green-50 text-green-500 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
                   <span className="material-symbols-outlined">table_view</span>
                 </div>
                 <div className="text-left">
@@ -235,7 +325,7 @@ export default function ProfilePage() {
           </button>
           
           <div className="text-center py-6 text-gray-400">
-            <p className="text-[10px] font-bold tracking-widest uppercase">Fin-Quest Project v1.0</p>
+            <p className="text-[10px] font-bold tracking-widest uppercase">MyDuit Quest v1.0</p>
           </div>
 
         </div>
@@ -328,6 +418,79 @@ export default function ProfilePage() {
                   className="flex-1 py-3 rounded-xl bg-danger text-white font-bold shadow-lg hover:scale-[1.02] transition-transform"
                 >
                   Ya, Hapus
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Profile Modal */}
+      <AnimatePresence>
+        {showEditProfileModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-[32px] p-6 w-full max-w-sm shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">Edit Profil</h3>
+              
+              <div className="overflow-y-auto no-scrollbar pb-2">
+                {/* Avatar Selection */}
+                <div className="mb-6">
+                  <span className="text-xs text-gray-400 font-bold uppercase mb-3 block">Pilih Avatar</span>
+                  <div className="grid grid-cols-3 gap-3">
+                    {AVATAR_OPTIONS.map((opt, idx) => (
+                      <button 
+                        key={idx}
+                        onClick={() => setNewAvatar(opt)}
+                        className={`aspect-square rounded-2xl border-2 overflow-hidden transition-all ${
+                          newAvatar === opt ? 'border-primary shadow-glow scale-105' : 'border-gray-100 opacity-60 hover:opacity-100 hover:scale-105'
+                        }`}
+                      >
+                        <img src={opt} alt={`Avatar ${idx}`} className="w-full h-full object-cover bg-gray-50" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Name Input */}
+                <div className="bg-gray-50 rounded-2xl p-4 mb-2 border border-gray-100">
+                  <span className="text-xs text-gray-400 font-bold uppercase mb-1 block">Nama Komandan</span>
+                  <input
+                    type="text"
+                    value={newUsername}
+                    onChange={(e) => setNewUsername(e.target.value)}
+                    maxLength={15}
+                    className="bg-transparent text-lg font-bold text-gray-900 w-full focus:outline-none"
+                    placeholder="Masukkan nama..."
+                  />
+                  <div className="text-right mt-1">
+                    <span className="text-[10px] text-gray-400">{newUsername.length}/15</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-4 pt-4 border-t border-gray-100">
+                <button
+                  onClick={() => setShowEditProfileModal(false)}
+                  className="flex-1 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleSaveProfile}
+                  disabled={newUsername.trim().length === 0}
+                  className="flex-1 py-3 rounded-xl bg-primary text-white font-bold shadow-glow hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Simpan
                 </button>
               </div>
             </motion.div>

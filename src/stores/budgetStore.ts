@@ -45,7 +45,7 @@ export const useBudgetStore = create<BudgetState>()(
       },
     }),
     {
-      name: 'fin-quest-budget',
+      name: 'myduit-quest-budget',
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },

@@ -1,17 +1,45 @@
+'use client';
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+// ===== DECORATION CATALOG =====
+export interface DecorationItem {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  requiredLevel: number;
+  type: 'flag' | 'torch' | 'banner' | 'garden' | 'fountain';
+}
+
+export const DECORATION_CATALOG: DecorationItem[] = [
+  { id: 'red_flag', name: 'Bendera Merah', icon: 'flag', description: 'Bendera klasik berwarna merah berkibar di bentengmu', requiredLevel: 2, type: 'flag' },
+  { id: 'blue_flag', name: 'Bendera Biru', icon: 'flag', description: 'Bendera biru kerajaan yang megah', requiredLevel: 3, type: 'flag' },
+  { id: 'gold_flag', name: 'Bendera Emas', icon: 'flag', description: 'Bendera emas langka untuk pejuang sejati', requiredLevel: 5, type: 'flag' },
+  { id: 'wall_torch', name: 'Obor Dinding', icon: 'local_fire_department', description: 'Obor api yang menerangi dinding benteng', requiredLevel: 3, type: 'torch' },
+  { id: 'blue_torch', name: 'Obor Biru', icon: 'local_fire_department', description: 'Obor api mistis berwarna biru', requiredLevel: 5, type: 'torch' },
+  { id: 'royal_banner', name: 'Panji Kerajaan', icon: 'bookmark', description: 'Panji besar bertuliskan lambang kerajaan', requiredLevel: 4, type: 'banner' },
+  { id: 'garden', name: 'Taman Mini', icon: 'park', description: 'Taman hijau kecil di sekitar benteng', requiredLevel: 6, type: 'garden' },
+  { id: 'fountain', name: 'Air Mancur', icon: 'water_drop', description: 'Air mancur mewah di depan benteng', requiredLevel: 7, type: 'fountain' },
+];
+
+// ===== GAME STATE =====
 interface GameState {
   xp: number;
   level: number;
   streak: number;
   lastTransactionDate: string | null;
   achievements: string[];
-  decorations: string[];
+  activeDecorations: string[];
+  username: string;
+  avatar: string;
   addXP: (amount: number) => void;
   updateStreak: () => void;
   unlockAchievement: (achievement: string) => void;
-  unlockDecoration: (decoration: string) => void;
+  toggleDecoration: (decorationId: string) => void;
+  isDecorationUnlocked: (decorationId: string) => boolean;
+  updateProfile: (username: string, avatar: string) => void;
   getLevelProgress: () => { current: number; max: number; percentage: number };
   getLevelName: () => string;
 }
@@ -39,8 +67,14 @@ export const useGameStore = create<GameState>()(
       streak: 0,
       lastTransactionDate: null,
       achievements: [],
-      decorations: ['flag'], // Default unlocked
+      activeDecorations: [],
+      username: 'Komandan',
+      avatar: '/avatar.png',
       
+      updateProfile: (username, avatar) => {
+        set({ username, avatar });
+      },
+
       addXP: (amount) => {
         set((state) => {
           const newXP = state.xp + amount;
@@ -66,16 +100,13 @@ export const useGameStore = create<GameState>()(
         const yesterdayStr = yesterday.toISOString().split('T')[0];
         
         if (lastDate === today) {
-          // Already recorded today
           return;
         } else if (lastDate === yesterdayStr) {
-          // Continued streak
           set((state) => ({
             streak: state.streak + 1,
             lastTransactionDate: today,
           }));
         } else {
-          // Streak broken
           set({ streak: 1, lastTransactionDate: today });
         }
       },
@@ -87,11 +118,24 @@ export const useGameStore = create<GameState>()(
         });
       },
       
-      unlockDecoration: (decoration) => {
-        set((state) => {
-          if (state.decorations.includes(decoration)) return state;
-          return { decorations: [...state.decorations, decoration] };
-        });
+      toggleDecoration: (decorationId) => {
+        const { level, activeDecorations } = get();
+        const item = DECORATION_CATALOG.find(d => d.id === decorationId);
+        if (!item || level < item.requiredLevel) return; // Can't toggle if locked
+        
+        if (activeDecorations.includes(decorationId)) {
+          // Remove
+          set({ activeDecorations: activeDecorations.filter(id => id !== decorationId) });
+        } else {
+          // Add
+          set({ activeDecorations: [...activeDecorations, decorationId] });
+        }
+      },
+      
+      isDecorationUnlocked: (decorationId) => {
+        const { level } = get();
+        const item = DECORATION_CATALOG.find(d => d.id === decorationId);
+        return item ? level >= item.requiredLevel : false;
       },
       
       getLevelProgress: () => {
@@ -113,7 +157,7 @@ export const useGameStore = create<GameState>()(
       },
     }),
     {
-      name: 'fin-quest-game',
+      name: 'myduit-quest-game',
     }
   )
 );
