@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { useBudgetStore, useTransactionStore, useGameStore } from '@/stores';
@@ -25,6 +26,7 @@ const TYPE_COLORS: Record<string, { bg: string; text: string; border: string }> 
 };
 
 export default function BattlePage() {
+  const router = useRouter();
   const { getHP } = useBudgetStore();
   const { getTotalExpenseThisMonth } = useTransactionStore();
   const { xp, level, streak, achievements, activeDecorations, toggleDecoration, isDecorationUnlocked, getLevelProgress, getLevelName } = useGameStore();
@@ -36,15 +38,17 @@ export default function BattlePage() {
   const levelProgress = getLevelProgress();
   
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center w-full font-display">
-      <div className="w-full max-w-md bg-bg-light min-h-screen relative shadow-2xl overflow-hidden pb-32">
-        
-        {/* Background Elements */}
-        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 w-full h-[500px] bg-gradient-to-b from-orange-50/80 to-transparent"></div>
-          <div className="absolute top-[-100px] left-[-100px] w-[300px] h-[300px] bg-red-300/10 rounded-full blur-3xl"></div>
-          <div className="absolute top-[50px] right-[-50px] w-[200px] h-[200px] bg-yellow-300/10 rounded-full blur-3xl"></div>
-        </div>
+    <div className="min-h-screen bg-bg-light font-display pb-32 relative overflow-hidden">
+      
+      {/* Background Elements */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 w-full h-[500px] bg-gradient-to-b from-orange-50/80 to-transparent"></div>
+        <div className="absolute top-[-100px] left-[-100px] w-[300px] h-[300px] bg-red-300/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-[50px] right-[-50px] w-[200px] h-[200px] bg-yellow-300/10 rounded-full blur-3xl"></div>
+      </div>
+      
+      {/* Desktop Container Wrapper */}
+      <div className="flex flex-col md:max-w-5xl md:mx-auto md:px-6 relative z-10 w-full">
 
       {/* Header */}
       <header className="relative z-10 px-6 pt-12 pb-6 flex items-center justify-between">
@@ -246,9 +250,19 @@ export default function BattlePage() {
         </div>
 
       </main>
-
-        <BottomNav />
       </div>
+
+      {/* Floating FAB - Adjusted for Desktop */}
+      <div className="fixed bottom-[70px] left-0 w-full flex justify-center pointer-events-none z-40 md:bottom-10 md:left-auto md:right-10 md:w-auto md:justify-end">
+        <button 
+          onClick={() => router.push('/add')}
+          className="pointer-events-auto w-16 h-16 bg-gradient-to-br from-primary to-primary-dark text-white rounded-full shadow-glow flex items-center justify-center transition-transform hover:scale-110 active:scale-95 group focus:outline-none focus:ring-4 focus:ring-primary/30 border-4 border-white/30 backdrop-blur-sm"
+        >
+          <span className="material-symbols-outlined text-[32px] group-hover:rotate-90 transition-transform duration-300 drop-shadow-md">add</span>
+        </button>
+      </div>
+
+      <BottomNav />
     </div>
   );
 }

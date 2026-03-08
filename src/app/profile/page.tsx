@@ -162,14 +162,17 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center w-full font-display">
-      <div className="w-full max-w-md bg-bg-light min-h-screen relative shadow-2xl overflow-hidden pb-32">
-        {/* Background Elements */}
-        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 w-full h-[400px] bg-gradient-to-b from-primary/10 to-transparent"></div>
-          <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] bg-primary/20 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-[100px] left-[-50px] w-[200px] h-[200px] bg-blue-300/20 rounded-full blur-3xl"></div>
-        </div>
+    <div className="min-h-screen bg-bg-light font-display pb-32 relative overflow-hidden">
+      
+      {/* Background Elements */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 w-full h-[400px] bg-gradient-to-b from-primary/10 to-transparent"></div>
+        <div className="absolute top-[-100px] right-[-100px] w-[300px] h-[300px] bg-primary/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-[100px] left-[-50px] w-[200px] h-[200px] bg-blue-300/20 rounded-full blur-3xl"></div>
+      </div>
+
+      {/* Desktop Container Wrapper */}
+      <div className="flex flex-col md:max-w-5xl md:mx-auto md:px-6 relative z-10 w-full">
 
       {/* Header */}
       <header className="relative z-10 px-6 pt-12 pb-6 flex items-center justify-between">
@@ -360,6 +363,7 @@ export default function ProfilePage() {
 
         </div>
       </main>
+      </div>
 
       {/* Budget Modal */}
       <AnimatePresence>
@@ -537,8 +541,17 @@ export default function ProfilePage() {
         )}
       </AnimatePresence>
 
-        <BottomNav />
+      {/* Floating FAB - Adjusted for Desktop */}
+      <div className="fixed bottom-[70px] left-0 w-full flex justify-center pointer-events-none z-40 md:bottom-10 md:left-auto md:right-10 md:w-auto md:justify-end">
+        <button 
+          onClick={() => router.push('/add')}
+          className="pointer-events-auto w-16 h-16 bg-gradient-to-br from-primary to-primary-dark text-white rounded-full shadow-glow flex items-center justify-center transition-transform hover:scale-110 active:scale-95 group focus:outline-none focus:ring-4 focus:ring-primary/30 border-4 border-white/30 backdrop-blur-sm"
+        >
+          <span className="material-symbols-outlined text-[32px] group-hover:rotate-90 transition-transform duration-300 drop-shadow-md">add</span>
+        </button>
       </div>
+
+      <BottomNav />
     </div>
   );
 }
