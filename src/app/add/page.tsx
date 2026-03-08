@@ -3,6 +3,7 @@
 import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import imageCompression from 'browser-image-compression';
 import { useTransactionStore, useGameStore } from '@/stores';
 
 const EXPENSE_CATEGORIES = [
@@ -36,6 +37,10 @@ function AddTransactionContent() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [isSuccess, setIsSuccess] = useState(false);
   
+  // Scanning State
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  
   const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
   
   useEffect(() => {
@@ -65,6 +70,93 @@ function AddTransactionContent() {
     
     setIsSuccess(true);
     setTimeout(() => router.back(), 800); // Faster redirect
+  };
+  
+  const handleScanReceipt = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsScanning(true);
+    setScanError(null);
+
+    try {
+      // 1. Compress Image
+      const options = {
+        maxSizeMB: 0.8,
+        maxWidthOrHeight: 1200,
+        useWebWorker: true,
+      };
+      
+      const compressedFile = await imageCompression(file, options);
+      
+      // 2. Convert to Base64
+      const reader = new FileReader();
+      reader.readAsDataURL(compressedFile);
+      
+      reader.onloadend = async () => {
+        const base64data = reader.result;
+        
+        // 3. Send to API
+        try {
+          const res = await fetch('/api/scan', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ imageBase64: base64data }),
+          });
+          
+          const data = await res.json();
+          
+          if (!res.ok) {
+            throw new Error(data.error || 'Gagal memindai struk.');
+          }
+          
+          // 4. Auto fill form
+          setType('expense'); // Receipts are usually expenses
+          
+          if (data.totalAmount) {
+            setAmount(data.totalAmount.toString());
+          }
+          
+          if (data.category && EXPENSE_CATEGORIES.some(c => c.id === data.category)) {
+             setCategory(data.category);
+          } else {
+             setCategory('shopping'); // Fallback category
+          }
+          
+          if (data.shopName) {
+            setNote(`Belanja di ${data.shopName}`);
+          }
+          
+          if (data.date) {
+            // Force it to today's date no matter what AI returns to prevent stats bugs
+            setDate(new Date().toISOString().split('T')[0]);
+          } else {
+             setDate(new Date().toISOString().split('T')[0]);
+          }
+          
+        } catch (apiError: any) {
+           console.error('API Error:', apiError);
+           setScanError(apiError.message || 'Terjadi kesalahan saat menghubungi agen AI.');
+        } finally {
+          setIsScanning(false);
+        }
+      };
+      
+      reader.onerror = () => {
+         setScanError('Gagal membaca file gambar.');
+         setIsScanning(false);
+      };
+
+    } catch (compressionError) {
+      console.error('Compression Error:', compressionError);
+      setScanError('Gagal mengompresi gambar.');
+      setIsScanning(false);
+    }
+    
+    // Reset file input so same file can be selected again if needed
+    e.target.value = '';
   };
   
   return (
@@ -110,7 +202,22 @@ function AddTransactionContent() {
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
         <span className="font-bold text-gray-900">Tambah Transaksi</span>
-        <div className="w-10"></div>
+        <div className="w-10 relative">
+           <input 
+             type="file" 
+             accept="image/*" 
+             // capture="environment" // Optional: open camera directly on mobile
+             id="receipt-upload" 
+             className="hidden" 
+             onChange={handleScanReceipt}
+           />
+           <label 
+             htmlFor="receipt-upload"
+             className="w-10 h-10 glass-card rounded-xl flex items-center justify-center text-primary hover:text-white hover:bg-primary transition-colors hover:scale-105 shadow-sm cursor-pointer"
+           >
+             <span className="material-symbols-outlined text-lg">document_scanner</span>
+           </label>
+        </div>
       </header>
 
       <main className="flex-1 px-6 pb-32 relative z-10 overflow-y-auto no-scrollbar">
@@ -203,6 +310,39 @@ function AddTransactionContent() {
             />
           </div>
         </div>
+
+        {/* Scan Status Area */}
+        <AnimatePresence>
+          {isScanning && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mt-6 p-4 bg-primary/10 border border-primary/20 rounded-2xl flex items-center gap-3"
+            >
+               <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+               <div className="flex flex-col">
+                 <span className="text-xs font-bold text-primary">Agen AI sedang bekerja...</span>
+                 <span className="text-[10px] text-gray-600">Menganalisis struk kamu. Mohon tunggu sebentar.</span>
+               </div>
+            </motion.div>
+          )}
+
+          {scanError && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mt-6 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3"
+            >
+               <span className="material-symbols-outlined text-red-500">error</span>
+               <div className="flex flex-col">
+                 <span className="text-xs font-bold text-red-700">Pemindaian Gagal</span>
+                 <span className="text-[10px] text-red-600">{scanError}</span>
+               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </main>
 
