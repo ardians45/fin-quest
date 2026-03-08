@@ -2,9 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useBudgetStore, useTransactionStore, useGameStore } from '@/stores';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { Fortress3D } from '@/components/visuals/Fortress3D';
+
+const GEN_Z_TIPS = [
+  "💡 Info ngab: Kopi susu tiap hari itu silent killer buat dompet lu.",
+  "💡 Self-reward boleh, tapi inget besok masih butuh makan.",
+  "💡 Paylater itu jebakan batman, mending nabung pelan-pelan.",
+  "💡 Promo gratis ongkir jangan dibikin alasan buat boros, kocak.",
+  "💡 'Uang bisa dicari', bener sih, tapi nyarinya pusing headshot.",
+  "💡 Kurang-kurangin checkout oren tengah malem, rawan khilaf.",
+  "💡 Tips: Leveling up benteng bikin lu makin pro ngatur duit.",
+  "💡 Gaya elit, ekonomi sulit. Mending nabung buat masa depan, chill.",
+  "💡 Ingat kata pepatah: Sedikit-dikit fyp, lama-lama jadi bukit duit.",
+  "💡 Catet pengeluaran emang ribet, tapi lebih ribet kalo tanggal tua nangis di pojokan."
+];
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -16,9 +30,17 @@ export default function DashboardPage() {
   
   // Mounted state to avoid hydration mismatch
   const [mounted, setMounted] = useState(false);
+  const [currentTipIndex, setCurrentTipIndex] = useState(0);
   
   useEffect(() => {
     setMounted(true);
+    
+    // Tips rotator
+    const interval = setInterval(() => {
+      setCurrentTipIndex((prev) => (prev + 1) % GEN_Z_TIPS.length);
+    }, 6000); // Rotates every 6 seconds
+    
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -347,9 +369,24 @@ export default function DashboardPage() {
             </div>
 
             {/* Tips Ticker */}
-            <div className="w-full h-8 bg-white/30 rounded-lg overflow-hidden relative flex items-center px-3 mt-1">
-              <div className="text-[10px] font-medium text-gray-500 flex flex-col w-full h-full justify-center">
-                 <span className="truncate">💡 Tips: Leveling up membuka dekorasi baru untuk bentengmu!</span>
+            <div 
+              className="w-full h-8 bg-white/30 rounded-lg overflow-hidden relative flex items-center px-3 mt-1 group cursor-pointer"
+              onClick={() => setCurrentTipIndex((prev) => (prev + 1) % GEN_Z_TIPS.length)}
+              title="Klik untuk ganti tips"
+            >
+              <div className="text-[10px] font-bold text-gray-700 flex flex-col w-full h-full justify-center">
+                 <AnimatePresence mode="wait">
+                   <motion.span 
+                     key={currentTipIndex}
+                     initial={{ opacity: 0, y: 10 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     exit={{ opacity: 0, y: -10 }}
+                     transition={{ duration: 0.3 }}
+                     className="truncate"
+                   >
+                     {GEN_Z_TIPS[currentTipIndex]}
+                   </motion.span>
+                 </AnimatePresence>
               </div>
             </div>
 
