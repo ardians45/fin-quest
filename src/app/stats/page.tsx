@@ -9,8 +9,10 @@ import { motion } from 'framer-motion';
 export default function StatsPage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [isCustomizing, setIsCustomizing] = useState(false);
+  const [customPercents, setCustomPercents] = useState({ needs: 50, wants: 30, savings: 20 });
   const { transactions, getTotalExpenseThisMonth, getTotalIncomeThisMonth } = useTransactionStore();
-  const { monthlyBudget } = useBudgetStore();
+  const { monthlyBudget, allocations, setAllocations } = useBudgetStore();
   const totalExpense = getTotalExpenseThisMonth();
   const totalIncome = getTotalIncomeThisMonth();
   const netBalance = totalIncome - totalExpense;
@@ -115,6 +117,61 @@ export default function StatsPage() {
 
   const formatCurrency = (value: number) => 
     new Intl.NumberFormat('id-ID').format(value);
+
+  // === SUB-BUDGET (ALLOCATIONS) LOGIC ===
+  const ALLOCATION_TEMPLATES = [
+    {
+      id: 'classic',
+      title: 'Strategi Pemula (50/30/20)',
+      description: 'Metode klasik yang seimbang.',
+      allocations: [
+        { id: 'needs', name: 'Logistik (Kebutuhan)', percentage: 50, icon: 'home', categories: ['food', 'utilities', 'health', 'education'] },
+        { id: 'wants', name: 'Tavern (Hiburan)', percentage: 30, icon: 'sports_esports', categories: ['shopping', 'entertainment', 'other'] },
+        { id: 'savings', name: 'Peti Emas (Tabungan)', percentage: 20, icon: 'savings', categories: [] }
+      ]
+    },
+    {
+      id: 'student',
+      title: 'Strategi Mahasiswa',
+      description: 'Fokus bertahan hidup & berhemat.',
+      allocations: [
+        { id: 'needs', name: 'Ransum Makanan', percentage: 40, icon: 'restaurant', categories: ['food'] },
+        { id: 'transport', name: 'Kuda / Transport', percentage: 20, icon: 'directions_car', categories: ['transport'] },
+        { id: 'wants', name: 'Lainnya', percentage: 20, icon: 'extension', categories: ['shopping', 'entertainment', 'other', 'health', 'education'] },
+        { id: 'savings', name: 'Tabungan', percentage: 20, icon: 'account_balance', categories: [] }
+      ]
+    }
+  ];
+
+  const handleCustomPercentsChange = (key: 'needs' | 'wants' | 'savings', value: number) => {
+    setCustomPercents(prev => ({ ...prev, [key]: value }));
+  };
+
+  const customTotal = customPercents.needs + customPercents.wants + customPercents.savings;
+
+  const handleSaveCustom = () => {
+    if (customTotal !== 100) return;
+    
+    setAllocations([
+      { id: 'needs', name: 'Logistik (Kebutuhan)', percentage: customPercents.needs, icon: 'home', categories: ['food', 'utilities', 'health', 'education'] },
+      { id: 'wants', name: 'Tavern (Hiburan)', percentage: customPercents.wants, icon: 'sports_esports', categories: ['shopping', 'entertainment', 'other'] },
+      { id: 'savings', name: 'Peti Emas (Tabungan)', percentage: customPercents.savings, icon: 'savings', categories: [] }
+    ]);
+    setIsCustomizing(false);
+  };
+
+  const allocationUsage = useMemo(() => {
+    return allocations.map(alloc => {
+      const budgetAmount = (alloc.percentage / 100) * monthlyBudget;
+      const spentAmount = transactions
+        .filter(t => t.type === 'expense' && t.date.startsWith(currentMonth))
+        .filter(t => alloc.categories.includes(t.category))
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      const percentageUsed = budgetAmount > 0 ? (spentAmount / budgetAmount) * 100 : 0;
+      return { ...alloc, budgetAmount, spentAmount, percentageUsed };
+    });
+  }, [allocations, transactions, currentMonth, monthlyBudget]);
 
   // Hydration check - prevent SSR/CSR mismatch
   if (!mounted) {
@@ -277,12 +334,12 @@ export default function StatsPage() {
             {/* Budget Progress Bar */}
             <div className="flex flex-col gap-2 pt-3 border-t border-gray-100">
               <div className="flex justify-between items-end">
-                <span className="text-[10px] font-bold text-gray-500">Penggunaan Budget</span>
+                <span className="text-[10px] font-bold text-gray-500">Total Penggunaan HP Benteng</span>
                 <span className="text-xs font-bold text-gray-800">{monthlyBudget > 0 ? Math.round((totalExpense / monthlyBudget) * 100) : 0}%</span>
               </div>
-              <div className="h-2.5 w-full bg-gray-100 rounded-full overflow-hidden shadow-inner">
+              <div className="h-2.5 w-full bg-gray-100 rounded-full overflow-hidden shadow-inner flex border border-gray-200/50">
                 <div 
-                  className={`h-full rounded-full transition-all duration-1000 ${
+                  className={`h-full transition-all duration-1000 ${
                     monthlyBudget > 0 && (totalExpense / monthlyBudget) > 0.9 ? 'bg-red-500' : 
                     monthlyBudget > 0 && (totalExpense / monthlyBudget) > 0.7 ? 'bg-amber-400' : 'bg-gradient-to-r from-indigo-500 to-purple-500'
                   }`}
@@ -292,6 +349,145 @@ export default function StatsPage() {
             </div>
           </div>
         </motion.div>
+
+        {/* NEW: SUB-BUDGET ALLOCATIONS */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-800">Distribusi Ransum (Sub-Budget)</h2>
+            {allocations.length > 0 && (
+               <button onClick={() => setAllocations([])} className="text-[10px] font-bold text-gray-400 hover:text-danger">
+                 Reset Strategi
+               </button>
+            )}
+          </div>
+
+          {allocations.length === 0 ? (
+            <div className="glass-card p-5 rounded-2xl border-2 border-dashed border-primary/30 flex flex-col gap-4">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-2">
+                  <span className="material-symbols-outlined text-2xl">account_tree</span>
+                </div>
+                <h3 className="text-sm font-bold text-gray-900 mb-1">Pilih Strategi Bertahan</h3>
+                <p className="text-[10px] sm:text-xs text-gray-500 px-4">Bagi HP Bentengmu ke beberapa pos untuk melacak pengeluaran lebih detail.</p>
+              </div>
+              <div className="flex flex-col gap-3">
+                {ALLOCATION_TEMPLATES.map((tmpl) => (
+                  <button 
+                    key={tmpl.id}
+                    onClick={() => setAllocations(tmpl.allocations)}
+                    className="flex flex-col text-left p-4 rounded-xl border border-gray-100 bg-white shadow-sm hover:border-primary/50 hover:shadow-md transition-all group"
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                       <span className="text-sm font-bold text-gray-800 group-hover:text-primary transition-colors">{tmpl.title}</span>
+                       <span className="material-symbols-outlined text-gray-300 group-hover:text-primary">arrow_forward_ios</span>
+                    </div>
+                    <span className="text-xs text-gray-500 mb-3">{tmpl.description}</span>
+                    <div className="flex items-center gap-1">
+                      {tmpl.allocations.map(a => (
+                        <div key={a.id} className="h-2 rounded-full bg-primary/40" style={{ width: `${a.percentage}%` }} title={`${a.percentage}%`}></div>
+                      ))}
+                    </div>
+                  </button>
+                ))}
+
+                {/* Custom Strategy Option */}
+                {!isCustomizing ? (
+                  <button 
+                    onClick={() => setIsCustomizing(true)}
+                    className="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition-all group"
+                  >
+                    <span className="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">tune</span>
+                    <span className="text-xs font-bold">Kustom Strategi Sendiri</span>
+                  </button>
+                ) : (
+                  <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 flex flex-col gap-4">
+                    <div className="flex justify-between items-center mb-2">
+                       <span className="text-sm font-bold text-gray-800">Atur Ransum</span>
+                       <span className={`text-xs font-bold ${customTotal === 100 ? 'text-success' : 'text-danger'}`}>
+                         Total: {customTotal}%
+                       </span>
+                    </div>
+
+                    {/* Sliders */}
+                    {[
+                      { key: 'needs', label: 'Logistik (Kebutuhan)', icon: 'home', color: 'bg-blue-500' },
+                      { key: 'wants', label: 'Tavern (Hiburan)', icon: 'sports_esports', color: 'bg-orange-500' },
+                      { key: 'savings', label: 'Peti Emas (Tabungan)', icon: 'savings', color: 'bg-green-500' },
+                    ].map(st => (
+                      <div key={st.key} className="flex flex-col gap-1">
+                        <div className="flex justify-between items-center text-[10px] font-bold text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[14px]">{st.icon}</span>
+                            <span>{st.label}</span>
+                          </div>
+                          <span>{customPercents[st.key as keyof typeof customPercents]}%</span>
+                        </div>
+                        <input 
+                          type="range" min="0" max="100" step="5"
+                          value={customPercents[st.key as keyof typeof customPercents]}
+                          onChange={(e) => handleCustomPercentsChange(st.key as keyof typeof customPercents, parseInt(e.target.value))}
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                      </div>
+                    ))}
+
+                    <div className="flex gap-2 mt-2">
+                      <button 
+                         onClick={() => setIsCustomizing(false)}
+                         className="flex-1 py-2 rounded-lg bg-white border border-gray-200 text-gray-600 font-bold text-xs"
+                      >
+                         Batal
+                      </button>
+                      <button 
+                         onClick={handleSaveCustom}
+                         disabled={customTotal !== 100}
+                         className="flex-1 py-2 rounded-lg bg-primary text-white font-bold text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                         Simpan
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {allocationUsage.map((alloc, idx) => (
+                <div key={alloc.id} className="glass-card p-4 rounded-2xl flex flex-col gap-3">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 shadow-sm ${getCategoryColor(idx)}`}>
+                         <span className="material-symbols-outlined text-[16px]">{alloc.icon}</span>
+                       </div>
+                       <div>
+                         <span className="text-sm font-bold text-gray-800 block leading-tight">{alloc.name}</span>
+                         <span className="text-[10px] font-bold text-gray-500 block leading-tight">{alloc.percentage}% Anggaran</span>
+                       </div>
+                    </div>
+                    <div className="text-right">
+                       <span className="text-xs font-black text-gray-900 block leading-tight">Rp {formatCurrency(alloc.budgetAmount - alloc.spentAmount)}</span>
+                       <span className="text-[9px] font-bold text-gray-400 block leading-tight">Sisa Target</span>
+                    </div>
+                  </div>
+                  
+                  {/* Progress Bar for the Allocation */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden shadow-inner flex border border-gray-200/50">
+                      <div 
+                        className={`h-full transition-all duration-700 ${
+                          alloc.percentageUsed > 100 ? 'bg-danger' : 
+                          alloc.percentageUsed > 80 ? 'bg-amber-500' : 'bg-success'
+                        }`}
+                        style={{ width: `${Math.min(alloc.percentageUsed, 100)}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-[10px] font-bold w-9 text-right text-gray-600">{Math.round(alloc.percentageUsed)}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
 
         {/* NEW: Insights Grid (Frequency + MoM) */}
         <div className="grid grid-cols-2 gap-3">

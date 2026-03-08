@@ -2,11 +2,21 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { syncBudgetToCloud } from '@/lib/sync';
 
+export interface BudgetAllocation {
+  id: string;
+  name: string;
+  percentage: number;
+  icon: string;
+  categories: string[];
+}
+
 interface BudgetState {
   monthlyBudget: number;
+  allocations: BudgetAllocation[];
   isOnboarded: boolean;
   _hasHydrated: boolean;
   setMonthlyBudget: (budget: number) => void;
+  setAllocations: (allocations: BudgetAllocation[]) => void;
   completeOnboarding: () => void;
   getHP: (totalExpense: number) => number;
   getHPStatus: (hp: number) => 'safe' | 'warning' | 'danger';
@@ -18,12 +28,18 @@ export const useBudgetStore = create<BudgetState>()(
   persist(
     (set, get) => ({
       monthlyBudget: 2000000,
+      allocations: [],
       isOnboarded: false,
       _hasHydrated: false,
       
       setMonthlyBudget: (budget) => {
         set({ monthlyBudget: budget });
         syncBudgetToCloud();
+      },
+      
+      setAllocations: (allocations) => {
+        set({ allocations });
+        syncBudgetToCloud(); // Assuming cloud sync supports it later
       },
       
       completeOnboarding: () => {
