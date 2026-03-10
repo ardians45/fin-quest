@@ -113,86 +113,86 @@ export const Fortress3D: React.FC<Fortress3DProps> = ({
 
   // --- MAIN KEEP ---
   const MainKeep = () => {
-    const scale = level >= 5 ? 1.1 : 1;
-    const yOffset = level >= 5 ? -5 : 0;
+    const scale = level >= 5 ? 1.05 : 1;
+    const yOffset = level >= 5 ? -3 : 0;
     return (
-      <g transform={`translate(110, ${70 + yOffset}) scale(${scale})`} filter={u('drop-shadow')}>
-        <ellipse cx="40" cy="65" rx="40" ry="15" fill="#000" opacity="0.25" />
-        <rect x="10" y="20" width="60" height="45" rx="3" fill={u('wallGrad')} />
-        <rect x="10" y="20" width="15" height="45" rx="0" fill={theme.wallLight} opacity="0.8" />
+      <g transform={`translate(115, ${72 + yOffset}) scale(${scale})`} filter={u('drop-shadow')}>
+        <ellipse cx="35" cy="60" rx="35" ry="13" fill="#000" opacity="0.25" />
+        <rect x="10" y="18" width="50" height="42" rx="3" fill={u('wallGrad')} />
+        <rect x="10" y="18" width="12" height="42" rx="0" fill={theme.wallLight} opacity="0.8" />
         {level >= 4 && (
           <g fill={theme.wallDark}>
-            <rect x="8" y="15" width="10" height="5" />
-            <rect x="22" y="15" width="10" height="5" />
-            <rect x="36" y="15" width="10" height="5" />
-            <rect x="50" y="15" width="10" height="5" />
-            <rect x="64" y="15" width="10" height="5" />
+            <rect x="8" y="13" width="9" height="5" />
+            <rect x="20" y="13" width="9" height="5" />
+            <rect x="32" y="13" width="9" height="5" />
+            <rect x="44" y="13" width="9" height="5" />
+            <rect x="56" y="13" width="9" height="5" />
           </g>
         )}
-        <path d="M0 20 L40 -10 L80 20 Z" fill={u('roofGrad')} />
-        <path d="M0 20 L40 -10 L40 20 Z" fill="#fff" opacity="0.15" />
-        <path d="M30 65 L30 40 Q40 30 50 40 L50 65 Z" fill="#451a03" />
-        <path d="M32 65 L32 42 Q40 34 48 42 L48 65 Z" fill="#78350f" />
-        <circle cx="47" cy="52" r="1.5" fill="#fbbf24" />
+        <path d="M0 18 L35 -8 L70 18 Z" fill={u('roofGrad')} />
+        <path d="M0 18 L35 -8 L35 18 Z" fill="#fff" opacity="0.15" />
+        <path d="M25 60 L25 38 Q35 28 45 38 L45 60 Z" fill="#451a03" />
+        <path d="M27 60 L27 40 Q35 32 43 40 L43 60 Z" fill="#78350f" />
+        <circle cx="42" cy="48" r="1.5" fill="#fbbf24" />
         <g fill="#1e1b4b">
-          <rect x="20" y="30" width="6" height="10" rx="3" />
-          <rect x="54" y="30" width="6" height="10" rx="3" />
-          {level >= 2 && <circle cx="40" cy="15" r="4" fill="#312e81" stroke="#9ca3af" strokeWidth="1.5" />}
+          <rect x="17" y="28" width="6" height="10" rx="3" />
+          <rect x="47" y="28" width="6" height="10" rx="3" />
+          {level >= 2 && <circle cx="35" cy="13" r="4" fill="#312e81" stroke="#9ca3af" strokeWidth="1.5" />}
         </g>
         {!isCritical && (
           <g fill="#fde047" opacity="0.8" filter={u('glow-orange')}>
-             <rect x="21" y="32" width="4" height="6" rx="2" />
-             <rect x="55" y="32" width="4" height="6" rx="2" />
+             <rect x="18" y="30" width="4" height="6" rx="2" />
+             <rect x="48" y="30" width="4" height="6" rx="2" />
           </g>
         )}
       </g>
     );
   };
 
-  const WallSegment = ({ x = 0, y = 0, scale = 1, width = 45 }: { x?: number, y?: number, scale?: number, width?: number }) => (
+  const WallSegment = ({ x = 0, y = 0, scale = 1, width = 40 }: { x?: number, y?: number, scale?: number, width?: number }) => (
     <g transform={`translate(${x}, ${90 + y}) scale(${scale})`} filter={u('drop-shadow')}>
-      <rect x="0" y="0" width={width} height="35" rx="2" fill={u('wallGrad')} />
+      <rect x="0" y="0" width={width} height="32" rx="2" fill={u('wallGrad')} />
       <rect x="0" y="0" width={width} height="4" fill={theme.wallLight} />
-      <rect x="0" y="0" width="8" height="35" fill="#fff" opacity="0.1" />
+      <rect x="0" y="0" width="7" height="32" fill="#fff" opacity="0.1" />
       <g fill={u('wallGrad')}>
          {Array.from({ length: Math.floor(width / 14) }).map((_, i) => (
-           <rect key={i} x={2 + i * 14} y="-6" width="10" height="6" />
+           <rect key={i} x={2 + i * 14} y="-5" width="9" height="5" />
          ))}
       </g>
       <g stroke={theme.wallDark} strokeWidth="1" opacity="0.5">
-        <line x1="10" y1="12" x2="20" y2="12" />
-        <line x1="25" y1="22" x2="35" y2="22" />
-        <line x1="5" y1="28" x2="15" y2="28" />
+        <line x1="8" y1="11" x2="18" y2="11" />
+        <line x1="22" y1="20" x2="32" y2="20" />
+        <line x1="4" y1="26" x2="14" y2="26" />
       </g>
     </g>
   );
 
-  const CircularTower = ({ x = 0, y = 0, height = 70 }: { x?: number, y?: number, height?: number }) => (
+  const CircularTower = ({ x = 0, y = 0, height = 60 }: { x?: number, y?: number, height?: number }) => (
     <g transform={`translate(${x}, ${y})`} filter={u('drop-shadow')}>
-       <ellipse cx="15" cy={height + 5} rx="18" ry="7" fill="#000" opacity="0.3" />
-       <rect x="0" y="10" width="30" height={height} rx="2" fill={u('towerGrad')} />
-       <rect x="-2" y="5" width="34" height="8" rx="1" fill={theme.wallDark} />
-       <rect x="-2" y="5" width="34" height="2" fill={theme.wallLight} />
-       <path d="M-5 5 L15 -25 L35 5 Z" fill={u('roofGrad')} />
-       <path d="M-5 5 L15 -25 L15 5 Z" fill="#fff" opacity="0.2" />
-       <line x1="15" y1="-25" x2="15" y2="-40" stroke="#9ca3af" strokeWidth="2" />
-       <rect x="12" y="25" width="6" height="12" rx="3" fill="#1e1b4b" />
-       {!isCritical && <rect x="13" y="27" width="4" height="8" rx="2" fill="#fde047" opacity="0.8" filter={u('glow-orange')} />}
+       <ellipse cx="13" cy={height + 4} rx="15" ry="6" fill="#000" opacity="0.3" />
+       <rect x="0" y="10" width="26" height={height} rx="2" fill={u('towerGrad')} />
+       <rect x="-2" y="5" width="30" height="7" rx="1" fill={theme.wallDark} />
+       <rect x="-2" y="5" width="30" height="2" fill={theme.wallLight} />
+       <path d="M-4 5 L13 -22 L30 5 Z" fill={u('roofGrad')} />
+       <path d="M-4 5 L13 -22 L13 5 Z" fill="#fff" opacity="0.2" />
+       <line x1="13" y1="-22" x2="13" y2="-35" stroke="#9ca3af" strokeWidth="2" />
+       <rect x="10" y="22" width="6" height="11" rx="3" fill="#1e1b4b" />
+       {!isCritical && <rect x="11" y="24" width="4" height="7" rx="2" fill="#fde047" opacity="0.8" filter={u('glow-orange')} />}
     </g>
   );
 
   const EntranceGate = () => (
-    <g transform="translate(120, 105)" filter={u('drop-shadow')}>
-       <path d="M0 45 V0 Q30 -25 60 0 V45 H50 V15 Q30 0 10 15 V45 Z" fill={u('wallGrad')} />
-       <path d="M10 45 V15 Q30 0 50 15 V45 Z" fill="#1c1917" />
-       <g stroke="#4b5563" strokeWidth="2.5">
-         <line x1="15" y1="5" x2="15" y2="45" />
-         <line x1="25" y1="0" x2="25" y2="45" />
-         <line x1="35" y1="0" x2="35" y2="45" />
-         <line x1="45" y1="5" x2="45" y2="45" />
-         <line x1="10" y1="15" x2="50" y2="15" />
-         <line x1="10" y1="25" x2="50" y2="25" />
-         <line x1="10" y1="35" x2="50" y2="35" />
+    <g transform="translate(125, 105)" filter={u('drop-shadow')}>
+       <path d="M0 42 V0 Q25 -22 50 0 V42 H42 V14 Q25 0 8 14 V42 Z" fill={u('wallGrad')} />
+       <path d="M8 42 V14 Q25 0 42 14 V42 Z" fill="#1c1917" />
+       <g stroke="#4b5563" strokeWidth="2">
+         <line x1="13" y1="5" x2="13" y2="42" />
+         <line x1="21" y1="0" x2="21" y2="42" />
+         <line x1="29" y1="0" x2="29" y2="42" />
+         <line x1="37" y1="5" x2="37" y2="42" />
+         <line x1="8" y1="14" x2="42" y2="14" />
+         <line x1="8" y1="23" x2="42" y2="23" />
+         <line x1="8" y1="32" x2="42" y2="32" />
        </g>
     </g>
   );
@@ -232,22 +232,22 @@ export const Fortress3D: React.FC<Fortress3DProps> = ({
   };
 
   const PremiumFountain = () => (
-    <g transform="translate(200, 110)" filter={u('drop-shadow')}>
-      <ellipse cx="15" cy="22" rx="22" ry="8" fill="#64748b" />
-      <ellipse cx="15" cy="20" rx="22" ry="8" fill="#94a3b8" />
-      <ellipse cx="15" cy="19" rx="18" ry="6" fill={u('waterGrad')} filter={u('glow-blue')} opacity="0.9">
+    <g transform="translate(190, 112)" filter={u('drop-shadow')}>
+      <ellipse cx="13" cy="20" rx="18" ry="7" fill="#64748b" />
+      <ellipse cx="13" cy="18" rx="18" ry="7" fill="#94a3b8" />
+      <ellipse cx="13" cy="17" rx="15" ry="5" fill={u('waterGrad')} filter={u('glow-blue')} opacity="0.9">
         <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite" />
       </ellipse>
-      <path d="M10 20 L12 5 H18 L20 20 Z" fill="#cbd5e1" />
-      <ellipse cx="15" cy="5" rx="8" ry="3" fill="#94a3b8" />
-      <path d="M13 5 Q15 -5, 17 5" stroke="#93c5fd" strokeWidth="2" fill="none" opacity="0.8">
-         <animate attributeName="d" values="M13 5 Q15 -5, 17 5; M13 5 Q15 -8, 17 5; M13 5 Q15 -5, 17 5" dur="0.8s" repeatCount="indefinite" />
+      <path d="M9 18 L10 5 H16 L17 18 Z" fill="#cbd5e1" />
+      <ellipse cx="13" cy="5" rx="7" ry="3" fill="#94a3b8" />
+      <path d="M11 5 Q13 -4, 15 5" stroke="#93c5fd" strokeWidth="2" fill="none" opacity="0.8">
+         <animate attributeName="d" values="M11 5 Q13 -4, 15 5; M11 5 Q13 -7, 15 5; M11 5 Q13 -4, 15 5" dur="0.8s" repeatCount="indefinite" />
       </path>
       {[0, 1, 2].map((i) => {
         const seed = (i * 137) % 10;
         return (
-          <circle key={i} cx={10 + seed} cy={10} r="1.5" fill="#bfdbfe" opacity="0">
-            <animate attributeName="cy" values="5;18" dur="1s" repeatCount="indefinite" begin={`${i * 0.3}s`} />
+          <circle key={i} cx={8 + seed} cy={10} r="1.5" fill="#bfdbfe" opacity="0">
+            <animate attributeName="cy" values="5;16" dur="1s" repeatCount="indefinite" begin={`${i * 0.3}s`} />
             <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin={`${i * 0.3}s`} />
           </circle>
         );
@@ -295,19 +295,19 @@ export const Fortress3D: React.FC<Fortress3DProps> = ({
         <BaseSite />
 
         {/* LAYER 2: BACK TOWERS & WALLS */}
-        {level >= 3 && <CircularTower x={60} y={40} height={60} />}
-        {level >= 3 && <CircularTower x={210} y={40} height={60} />}
-        {level >= 2 && <WallSegment x={90} y={-10} scale={0.9} width={120} />}
+        {level >= 3 && <CircularTower x={75} y={42} height={55} />}
+        {level >= 3 && <CircularTower x={200} y={42} height={55} />}
+        {level >= 2 && <WallSegment x={100} y={-10} scale={0.9} width={100} />}
 
         {/* LAYER 3: MAIN KEEP */}
         <MainKeep />
 
         {/* LAYER 4: FRONT DEFENSES */}
-        {level >= 2 && <WallSegment x={40} width={80} />}
-        {level >= 2 && <WallSegment x={180} width={80} />}
+        {level >= 2 && <WallSegment x={55} width={70} />}
+        {level >= 2 && <WallSegment x={175} width={70} />}
         {level >= 4 && <EntranceGate />}
-        {level >= 5 && <CircularTower x={30} y={80} height={50} />}
-        {level >= 5 && <CircularTower x={240} y={80} height={50} />}
+        {level >= 5 && <CircularTower x={50} y={82} height={45} />}
+        {level >= 5 && <CircularTower x={225} y={82} height={45} />}
 
         {/* LAYER 5: GROUND DECORATIONS */}
         {hasDecor('garden') && <PremiumGarden />}
@@ -315,19 +315,19 @@ export const Fortress3D: React.FC<Fortress3DProps> = ({
 
         {/* LAYER 6: STRUCTURE DECORATIONS */}
         {hasDecor('red_flag') && (
-           <><FlagDecor x={75} y={15} color="#ef4444" /><FlagDecor x={225} y={15} color="#ef4444" /></>
+           <><FlagDecor x={88} y={18} color="#ef4444" /><FlagDecor x={213} y={18} color="#ef4444" /></>
         )}
         {hasDecor('blue_flag') && (
-           <><FlagDecor x={75} y={15} color="#3b82f6" /><FlagDecor x={225} y={15} color="#3b82f6" /></>
+           <><FlagDecor x={88} y={18} color="#3b82f6" /><FlagDecor x={213} y={18} color="#3b82f6" /></>
         )}
         {hasDecor('gold_flag') && (
-           <><FlagDecor x={75} y={15} color="#fbbf24" goldStar /><FlagDecor x={225} y={15} color="#fbbf24" goldStar /></>
+           <><FlagDecor x={88} y={18} color="#fbbf24" goldStar /><FlagDecor x={213} y={18} color="#fbbf24" goldStar /></>
         )}
         {hasDecor('wall_torch') && (
-          <><PremiumTorch x={110} y={140} /><PremiumTorch x={190} y={140} /></>
+          <><PremiumTorch x={115} y={138} /><PremiumTorch x={185} y={138} /></>
         )}
         {hasDecor('blue_torch') && (
-          <><PremiumTorch x={110} y={140} isBlue /><PremiumTorch x={190} y={140} isBlue /></>
+          <><PremiumTorch x={115} y={138} isBlue /><PremiumTorch x={185} y={138} isBlue /></>
         )}
         {hasDecor('royal_banner') && (
           <g transform="translate(150, 75)">
@@ -373,11 +373,6 @@ export const Fortress3D: React.FC<Fortress3DProps> = ({
         )}
 
       </motion.svg>
-      {/* Level Badge */}
-      <div className="absolute top-0 right-0 md:top-4 md:right-4 bg-gradient-to-r from-primary to-primary-dark backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-black text-white shadow-[0_4px_20px_rgba(167,139,250,0.4)] border border-white/20 z-20 flex items-center gap-1">
-        <span className="material-symbols-outlined text-[14px]">star</span>
-        LV. {level}
-      </div>
     </div>
   );
 };
