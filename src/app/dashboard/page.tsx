@@ -51,7 +51,7 @@ export default function DashboardPage() {
     // Tips rotator
     const interval = setInterval(() => {
       setCurrentTipIndex((prev) => (prev + 1) % GEN_Z_TIPS.length);
-    }, 6000); // Rotates every 6 seconds
+    }, 15000); // Rotates every 7 seconds
     
     return () => clearInterval(interval);
   }, []);
@@ -427,26 +427,52 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* Tips Ticker */}
-            <div 
-              className="w-full h-8 bg-white/30 rounded-lg overflow-hidden relative flex items-center px-3 mt-1 group cursor-pointer"
-              onClick={() => setCurrentTipIndex((prev) => (prev + 1) % GEN_Z_TIPS.length)}
-              title="Klik untuk ganti tips"
-            >
-              <div className="text-[10px] font-bold text-gray-700 flex flex-col w-full h-full justify-center">
-                 <AnimatePresence mode="wait">
-                   <motion.span 
-                     key={currentTipIndex}
-                     initial={{ opacity: 0, y: 10 }}
-                     animate={{ opacity: 1, y: 0 }}
-                     exit={{ opacity: 0, y: -10 }}
-                     transition={{ duration: 0.3 }}
-                     className="truncate"
-                   >
-                     {GEN_Z_TIPS[currentTipIndex]}
-                   </motion.span>
-                 </AnimatePresence>
-              </div>
+            {/* Premium Tips Ticker */}
+            <div className="w-full mt-1 mb-4 group cursor-pointer" onClick={() => setCurrentTipIndex((prev) => (prev + 1) % GEN_Z_TIPS.length)} title="Klik untuk ganti tips">
+               <div className="relative glass-card rounded-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 hover:border-primary/30 transition-all overflow-hidden bg-gradient-to-r from-white/80 to-indigo-50/50 backdrop-blur-xl">
+                 
+                 {/* Decorative background blur */}
+                 <div className="absolute -left-4 -top-4 w-16 h-16 bg-blue-400/10 rounded-full blur-xl pointer-events-none"></div>
+                 <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-purple-400/10 rounded-full blur-xl pointer-events-none"></div>
+                 
+                 <div className="flex items-center gap-3 relative z-10">
+                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 flex-shrink-0 animate-pulse-slow">
+                     <span className="material-symbols-outlined text-white text-[16px]">tips_and_updates</span>
+                   </div>
+                   
+                   <div className="flex-1 w-full overflow-hidden">
+                     <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400 block mb-0.5">Petuah Harian</span>
+                     <div className="w-full relative h-[20px] overflow-hidden flex items-center">
+                       <AnimatePresence>
+                         <motion.div 
+                           key={currentTipIndex}
+                           initial={{ x: 400 }}
+                           animate={{ x: -800 }}
+                           transition={{ duration: 15, ease: "linear" }}
+                           className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap absolute"
+                         >
+                           {GEN_Z_TIPS[currentTipIndex].replace('💡', '').trim()}
+                         </motion.div>
+                       </AnimatePresence>
+                     </div>
+                   </div>
+                   
+                   <div className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                     <span className="material-symbols-outlined text-gray-400 text-[18px]">keyboard_double_arrow_right</span>
+                   </div>
+                 </div>
+                 
+                 {/* Progress Indicator */}
+                 <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gray-100/50">
+                    <motion.div 
+                      key={`progress-${currentTipIndex}`}
+                      initial={{ width: "0%" }}
+                      animate={{ width: "100%" }}
+                      transition={{ duration: 15, ease: "linear" }}
+                      className="h-full bg-gradient-to-r from-indigo-400 to-purple-500 rounded-r-full"
+                    />
+                 </div>
+               </div>
             </div>
 
           </section>
