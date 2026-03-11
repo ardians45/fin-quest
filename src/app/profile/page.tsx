@@ -9,6 +9,14 @@ import { SyncStatus } from '@/components/ui/SyncStatus';
 import { deleteAllCloudData } from '@/lib/sync';
 import { ProBadge } from '@/components/ui/ProBadge';
 import { UpgradeModal } from '@/components/ui/UpgradeModal';
+import {
+  isNotificationSupported,
+  enableDailyNotification,
+  disableDailyNotification,
+  isDailyNotificationEnabled,
+  sendTestNotification,
+  getNotificationPermission,
+} from '@/lib/notifications';
 
 const FREE_AVATAR_OPTIONS = [
   '/avatar.png',
@@ -41,12 +49,17 @@ export default function ProfilePage() {
   const [newBudget, setNewBudget] = useState(monthlyBudget.toString());
   const [newUsername, setNewUsername] = useState(username || 'Komandan');
   const [newAvatar, setNewAvatar] = useState(avatar || '/avatar.png');
-  const [notifications, setNotifications] = useState(true);
+  const [notifications, setNotifications] = useState(false);
+  const [notifPermission, setNotifPermission] = useState<string>('default');
+  const [notifLoading, setNotifLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    // Sync notification state from storage
+    setNotifications(isDailyNotificationEnabled());
+    setNotifPermission(getNotificationPermission());
   }, []);
   
   const levelProgress = getLevelProgress();
@@ -338,14 +351,47 @@ export default function ProfilePage() {
                 </div>
                 <div className="text-left">
                   <p className="font-bold text-gray-800 text-sm">Notifikasi Harian</p>
-                  <p className="text-xs text-gray-400">Pengingat catat transaksi</p>
+                  {notifPermission === 'denied' ? (
+                    <p className="text-xs text-red-500">Diblokir – aktifkan di pengaturan browser</p>
+                  ) : notifications ? (
+                    <p className="text-xs text-success font-medium">Aktif • Setiap hari pukul 20:00</p>
+                  ) : (
+                    <p className="text-xs text-gray-400">Pengingat catat transaksi</p>
+                  )}
                 </div>
               </div>
               <button 
-                onClick={() => setNotifications(!notifications)}
-                className={`w-12 h-6 rounded-full relative transition-colors ${notifications ? 'bg-success' : 'bg-gray-200'}`}
+                disabled={notifLoading || notifPermission === 'denied' || !isNotificationSupported()}
+                onClick={async () => {
+                  setNotifLoading(true);
+                  if (notifications) {
+                    await disableDailyNotification();
+                    setNotifications(false);
+                  } else {
+                    const result = await enableDailyNotification(20, 0);
+                    if (result === 'granted') {
+                      setNotifications(true);
+                      setNotifPermission('granted');
+                      await sendTestNotification();
+                    } else if (result === 'denied') {
+                      setNotifPermission('denied');
+                    }
+                  }
+                  setNotifLoading(false);
+                }}
+                className={`w-12 h-6 rounded-full relative transition-colors disabled:opacity-40 ${
+                  notifications && notifPermission === 'granted' ? 'bg-success' : 'bg-gray-200'
+                }`}
               >
-                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${notifications ? 'left-7' : 'left-1'}`}></div>
+                {notifLoading ? (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : (
+                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${
+                    notifications && notifPermission === 'granted' ? 'left-7' : 'left-1'
+                  }`} />
+                )}
               </button>
             </div>
           </div>
