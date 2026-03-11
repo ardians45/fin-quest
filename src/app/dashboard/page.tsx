@@ -3,9 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import { useBudgetStore, useTransactionStore, useGameStore } from '@/stores';
 import { BottomNav } from '@/components/layout/BottomNav';
-import { Fortress3D } from '@/components/visuals/Fortress3D';
+
+const Fortress3D = dynamic(
+  () => import('@/components/visuals/Fortress3D').then(mod => ({ default: mod.Fortress3D })),
+  { ssr: false, loading: () => <div className="w-full aspect-square max-w-[320px] mx-auto flex items-center justify-center"><div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div> }
+);
 
 const GEN_Z_TIPS = [
   "💡 Info ngab: Kopi susu tiap hari itu silent killer buat dompet lu.",
@@ -456,7 +461,7 @@ export default function DashboardPage() {
                            className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap absolute"
                          >
                            {GEN_Z_TIPS[currentTipIndex].replace('💡', '').trim()}
-                         </motion.div>
+                          </motion.div>
                        </AnimatePresence>
                      </div>
                    </div>

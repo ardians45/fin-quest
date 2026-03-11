@@ -3,10 +3,15 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { useBudgetStore, useTransactionStore, useGameStore } from '@/stores';
 import { DECORATION_CATALOG } from '@/stores/gameStore';
-import { Fortress3D } from '@/components/visuals/Fortress3D';
+
+const Fortress3D = dynamic(
+  () => import('@/components/visuals/Fortress3D').then(mod => ({ default: mod.Fortress3D })),
+  { ssr: false, loading: () => <div className="w-full aspect-square flex items-center justify-center"><div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div> }
+);
 
 const ACHIEVEMENTS = [
   { id: 'first_setup', label: 'Mulai Petualangan', icon: 'flag', description: 'Selesaikan setup awal' },
