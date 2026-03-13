@@ -210,7 +210,7 @@ export default function ProfilePage() {
             setNewAvatar(avatar || '/avatar.png');
             setShowEditProfileModal(true);
           }}
-          className="w-10 h-10 glass-card rounded-xl flex items-center justify-center text-primary shadow-soft hover:bg-primary/10 transition-colors"
+          className="cursor-pointer w-10 h-10 glass-card rounded-xl flex items-center justify-center text-primary shadow-soft hover:bg-primary/10 transition-colors"
         >
           <span className="material-symbols-outlined">edit</span>
         </button>
@@ -285,7 +285,7 @@ export default function ProfilePage() {
         {!isPro && (
           <button 
             onClick={() => setShowUpgradeModal(true)}
-            className="relative overflow-hidden rounded-[24px] p-5 text-left group active:scale-[0.98] transition-transform"
+            className="cursor-pointer relative overflow-hidden rounded-[24px] p-5 text-left group active:scale-[0.98] transition-transform"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-yellow-500 to-orange-500" />
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0id2hpdGUiIGZpbGwtb3BhY2l0eT0iMC4xIi8+PC9zdmc+')] opacity-30" />
@@ -329,7 +329,7 @@ export default function ProfilePage() {
           
           <button 
             onClick={() => setShowBudgetModal(true)}
-            className="glass-card p-4 rounded-2xl flex items-center justify-between group active:scale-[0.98] transition-transform"
+            className="cursor-pointer glass-card p-4 rounded-2xl flex items-center justify-between group active:scale-[0.98] transition-transform"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center">
@@ -379,7 +379,7 @@ export default function ProfilePage() {
                   }
                   setNotifLoading(false);
                 }}
-                className={`w-12 h-6 rounded-full relative transition-colors disabled:opacity-40 ${
+                className={`cursor-pointer w-12 h-6 rounded-full relative transition-colors disabled:opacity-40 ${
                   notifications && notifPermission === 'granted' ? 'bg-success' : 'bg-gray-200'
                 }`}
               >
@@ -403,7 +403,7 @@ export default function ProfilePage() {
           <div className="glass-card rounded-2xl overflow-hidden divide-y divide-gray-50 mt-4">
             <button 
               onClick={() => handleExport('json')}
-              className="w-full p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors"
+              className="cursor-pointer w-full p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-green-50 text-green-500 flex items-center justify-center">
@@ -417,7 +417,7 @@ export default function ProfilePage() {
             </button>
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="w-full p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors"
+              className="cursor-pointer w-full p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
@@ -440,7 +440,7 @@ export default function ProfilePage() {
             {isPro ? (
               <button 
                 onClick={() => handleExport('csv')}
-                className="w-full p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors"
+                className="cursor-pointer w-full p-4 flex items-center justify-between hover:bg-gray-50/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center">
@@ -456,7 +456,7 @@ export default function ProfilePage() {
             ) : (
               <button 
                 onClick={() => setShowUpgradeModal(true)}
-                className="w-full p-4 flex items-center justify-between hover:bg-amber-50/50 transition-colors opacity-70"
+                className="cursor-pointer w-full p-4 flex items-center justify-between hover:bg-amber-50/50 transition-colors opacity-70"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gray-100 text-gray-400 flex items-center justify-center">
@@ -464,7 +464,6 @@ export default function ProfilePage() {
                   </div>
                   <div className="text-left">
                     <p className="font-bold text-gray-500 text-sm">Export Excel (CSV)</p>
-                    <p className="text-[10px] text-amber-600 font-bold">🔒 Pro Plan</p>
                   </div>
                 </div>
                 <span className="material-symbols-outlined text-amber-400">workspace_premium</span>
@@ -474,7 +473,7 @@ export default function ProfilePage() {
 
           <button 
             onClick={() => setShowDeleteModal(true)}
-            className="glass-card p-4 rounded-2xl flex items-center gap-3 group active:scale-[0.98] transition-transform border border-danger/10 text-danger hover:bg-danger/5"
+            className="cursor-pointer glass-card p-4 rounded-2xl flex items-center gap-3 group active:scale-[0.98] transition-transform border border-danger/10 text-danger hover:bg-danger/5"
           >
             <div className="w-10 h-10 rounded-xl bg-danger/10 flex items-center justify-center">
               <span className="material-symbols-outlined">delete_forever</span>
@@ -634,7 +633,6 @@ export default function ProfilePage() {
                   <div className="mt-4">
                     <div className="flex items-center gap-2 mb-3">
                       <span className="text-xs text-amber-600 font-bold uppercase">Avatar Premium</span>
-                      {!isPro && <span className="text-[9px] bg-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded-full">🔒 Pro</span>}
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                       {PRO_AVATAR_OPTIONS.map((opt, idx) => (
@@ -715,7 +713,7 @@ export default function ProfilePage() {
       <div className="fixed bottom-[70px] left-0 w-full flex justify-center pointer-events-none z-40 md:bottom-10 md:left-auto md:right-10 md:w-auto md:justify-end">
         <button 
           onClick={() => router.push('/add')}
-          className="pointer-events-auto w-16 h-16 bg-gradient-to-br from-primary to-primary-dark text-white rounded-full shadow-glow flex items-center justify-center transition-transform hover:scale-110 active:scale-95 group focus:outline-none focus:ring-4 focus:ring-primary/30 border-4 border-white/30 backdrop-blur-sm"
+          className="cursor-pointer pointer-events-auto w-16 h-16 bg-gradient-to-br from-primary to-primary-dark text-white rounded-full shadow-glow flex items-center justify-center transition-transform hover:scale-110 active:scale-95 group focus:outline-none focus:ring-4 focus:ring-primary/30 border-4 border-white/30 backdrop-blur-sm"
         >
           <span className="material-symbols-outlined text-[32px] group-hover:rotate-90 transition-transform duration-300 drop-shadow-md">add</span>
         </button>

@@ -203,7 +203,7 @@ export default function DashboardPage() {
               </span>
             </div>
           </div>
-          <button className="flex items-center gap-2 px-3 py-1.5 glass-card hover:bg-white rounded-full transition-all active:scale-95 shadow-sm group">
+          <button className="cursor-pointer flex items-center gap-2 px-3 py-1.5 glass-card hover:bg-white rounded-full transition-all active:scale-95 shadow-sm group">
             <span className="material-symbols-outlined text-[18px] text-gray-600 group-hover:rotate-180 transition-transform duration-500">sync</span>
           </button>
         </header>
@@ -240,7 +240,7 @@ export default function DashboardPage() {
                <div className="absolute top-[20%] left-[15%] z-10 animate-float-delayed pointer-events-auto">
                  <button 
                    onClick={() => router.push('/add?type=income')}
-                   className="w-12 h-12 glass-card rounded-2xl flex items-center justify-center hover:border-primary hover:text-primary transition-colors group relative"
+                   className="cursor-pointer w-12 h-12 glass-card rounded-2xl flex items-center justify-center hover:border-primary hover:text-primary transition-colors group relative"
                  >
                    <span className="material-symbols-outlined text-gray-400 group-hover:text-primary">add</span>
                    <span className="absolute -bottom-4 bg-gray-800 text-white text-[8px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
@@ -263,7 +263,7 @@ export default function DashboardPage() {
                <div className="absolute bottom-[25%] left-[15%] z-20 pointer-events-auto">
                  <button 
                    onClick={() => router.push('/battle?tab=dekorasi')}
-                   className="w-12 h-12 glass-card rounded-2xl flex items-center justify-center hover:border-primary hover:text-primary transition-colors group relative"
+                   className="cursor-pointer w-12 h-12 glass-card rounded-2xl flex items-center justify-center hover:border-primary hover:text-primary transition-colors group relative"
                  >
                    <span className={`material-symbols-outlined transition-colors ${level >= 2 ? 'text-primary' : 'text-gray-400 group-hover:text-primary'}`}>
                      {level >= 2 ? 'palette' : 'lock'}
@@ -347,7 +347,7 @@ export default function DashboardPage() {
                   <div className="flex flex-col">
                     <span className="text-[10px] font-bold text-gray-400 uppercase">Pertarungan Hari Ini</span>
                     <span className="text-xs font-bold text-gray-700">
-                       {todayTransactions.length > 0 ? `Bertarung ${todayTransactions.length} kali` : "Belum ada aktivitas"} ⚔️
+                       {todayTransactions.length > 0 ? `Bertarung ${todayTransactions.length} kali` : "Belum ada aktivitas"}
                     </span>
                   </div>
                </div>
@@ -493,7 +493,7 @@ export default function DashboardPage() {
       <div className="fixed bottom-[70px] left-0 w-full flex justify-center pointer-events-none z-40 md:bottom-10 md:left-auto md:right-10 md:w-auto md:justify-end">
         <button 
           onClick={() => router.push('/add')}
-          className="pointer-events-auto w-16 h-16 bg-gradient-to-br from-primary to-primary-dark text-white rounded-full shadow-glow flex items-center justify-center transition-transform hover:scale-110 active:scale-95 group focus:outline-none focus:ring-4 focus:ring-primary/30 border-4 border-white/30 backdrop-blur-sm"
+          className="cursor-pointer pointer-events-auto w-16 h-16 bg-gradient-to-br from-primary to-primary-dark text-white rounded-full shadow-glow flex items-center justify-center transition-transform hover:scale-110 active:scale-95 group focus:outline-none focus:ring-4 focus:ring-primary/30 border-4 border-white/30 backdrop-blur-sm"
         >
           <span className="material-symbols-outlined text-[32px] group-hover:rotate-90 transition-transform duration-300 drop-shadow-md">add</span>
         </button>

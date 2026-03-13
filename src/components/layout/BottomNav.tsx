@@ -15,7 +15,7 @@ export const BottomNav = () => {
         {/* Beranda */}
         <button 
           onClick={() => router.push('/dashboard')}
-          className={`flex flex-col items-center gap-1 p-2 relative min-w-[60px] transition-colors ${
+          className={`flex flex-col items-center gap-1 p-2 relative min-w-[60px] transition-colors cursor-pointer ${
             isActive('/dashboard') ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
           }`}
         >
@@ -31,7 +31,7 @@ export const BottomNav = () => {
         {/* Statistik */}
         <button 
           onClick={() => router.push('/stats')}
-          className={`flex flex-col items-center gap-1 p-2 relative min-w-[60px] transition-colors ${
+          className={`flex flex-col items-center gap-1 p-2 relative min-w-[60px] transition-colors cursor-pointer ${
             isActive('/stats') ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
           }`}
         >
@@ -49,7 +49,7 @@ export const BottomNav = () => {
         {/* Benteng */}
         <button 
           onClick={() => router.push('/battle')}
-          className={`flex flex-col items-center gap-1 p-2 relative min-w-[60px] transition-colors ${
+          className={`flex flex-col items-center gap-1 p-2 relative min-w-[60px] transition-colors cursor-pointer ${
             isActive('/battle') ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
           }`}
         >
@@ -65,7 +65,7 @@ export const BottomNav = () => {
         {/* Profil */}
         <button 
           onClick={() => router.push('/profile')}
-          className={`flex flex-col items-center gap-1 p-2 relative min-w-[60px] transition-colors ${
+          className={`flex flex-col items-center gap-1 p-2 relative min-w-[60px] transition-colors cursor-pointer ${
             isActive('/profile') ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
           }`}
         >
