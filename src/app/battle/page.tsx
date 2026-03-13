@@ -37,6 +37,7 @@ export default function BattlePage() {
   const { xp, level, streak, achievements, activeDecorations, toggleDecoration, isDecorationUnlocked, getLevelProgress, getLevelName } = useGameStore();
   const { isPro } = useProStore();
   const [activeTab, setActiveTab] = useState<'achievements' | 'decorations'>('achievements');
+  const [shakeId, setShakeId] = useState<string | null>(null);
   
   const totalExpense = getTotalExpenseThisMonth();
   const hp = getHP(totalExpense);
@@ -118,7 +119,7 @@ export default function BattlePage() {
         <div className="flex bg-gray-200/50 p-1 rounded-xl">
           <button
             onClick={() => setActiveTab('achievements')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+            className={`cursor-pointer flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
               activeTab === 'achievements' ? 'bg-white text-primary shadow-sm' : 'text-gray-500'
             }`}
           >
@@ -126,7 +127,7 @@ export default function BattlePage() {
           </button>
           <button
             onClick={() => setActiveTab('decorations')}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 ${
+            className={`cursor-pointer flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 ${
               activeTab === 'decorations' ? 'bg-white text-primary shadow-sm' : 'text-gray-500'
             }`}
           >
@@ -190,13 +191,23 @@ export default function BattlePage() {
                     <motion.button
                       key={item.id}
                       initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: index * 0.07 }}
-                      onClick={() => unlocked && toggleDecoration(item.id, isPro)}
-                      disabled={!unlocked}
-                      className={`relative p-4 rounded-2xl flex flex-col items-center gap-2 text-center transition-all active:scale-95 ${
+                      animate={{ 
+                        y: 0, 
+                        opacity: 1,
+                        x: shakeId === item.id ? [-5, 5, -5, 5, 0] : 0
+                      }}
+                      transition={{ delay: shakeId === item.id ? 0 : index * 0.07, duration: shakeId === item.id ? 0.3 : 0.4 }}
+                      onClick={() => {
+                        if (unlocked) {
+                          toggleDecoration(item.id, isPro);
+                        } else {
+                          setShakeId(item.id);
+                          setTimeout(() => setShakeId(null), 400);
+                        }
+                      }}
+                      className={`relative p-4 rounded-2xl flex flex-col items-center gap-2 text-center transition-all ${unlocked ? 'active:scale-95 cursor-pointer' : 'cursor-not-allowed'} ${
                         !unlocked
-                          ? 'glass-card opacity-50 grayscale cursor-not-allowed'
+                          ? (shakeId === item.id ? 'bg-red-50 border-2 border-red-300 opacity-90' : 'glass-card opacity-50 grayscale')
                           : isActive
                             ? `${typeColor.bg} border-2 ${typeColor.border} shadow-md`
                             : 'glass-card hover:bg-white/80 border border-transparent hover:border-gray-200'
