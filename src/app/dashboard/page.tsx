@@ -132,7 +132,7 @@ export default function DashboardPage() {
     actionColor = "bg-red-50 text-red-700 border-red-200";
     actionIcon = "warning";
   } else if (hp < 70) {
-    actionMessage = "Kurangi jajan hari ini ⚠️";
+    actionMessage = "Kurangi jajan hari ini";
     actionColor = "bg-amber-50 text-amber-700 border-amber-200";
     actionIcon = "priority_high";
   }

@@ -210,7 +210,7 @@ function AddTransactionContent() {
       <header className="px-6 pt-8 pb-4 relative z-10 flex items-center justify-between">
         <button 
           onClick={() => router.back()}
-          className="w-10 h-10 glass-card rounded-xl flex items-center justify-center text-gray-600 hover:scale-105 transition-transform"
+          className="cursor-pointer w-10 h-10 glass-card rounded-xl flex items-center justify-center text-gray-600 hover:scale-105 transition-transform"
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
@@ -251,13 +251,13 @@ function AddTransactionContent() {
           />
           <button
             onClick={() => setType('expense')}
-            className={`flex-1 py-3 text-sm font-bold text-center relative z-10 transition-colors ${type === 'expense' ? 'text-danger' : 'text-gray-500'}`}
+            className={`cursor-pointer flex-1 py-3 text-sm font-bold text-center relative z-10 transition-colors ${type === 'expense' ? 'text-danger' : 'text-gray-500'}`}
           >
             Pengeluaran
           </button>
           <button
             onClick={() => setType('income')}
-            className={`flex-1 py-3 text-sm font-bold text-center relative z-10 transition-colors ${type === 'income' ? 'text-success' : 'text-gray-500'}`}
+            className={`cursor-pointer flex-1 py-3 text-sm font-bold text-center relative z-10 transition-colors ${type === 'income' ? 'text-success' : 'text-gray-500'}`}
           >
             Pemasukan
           </button>
@@ -288,7 +288,7 @@ function AddTransactionContent() {
               <button
                 key={cat.id}
                 onClick={() => setCategory(cat.id)}
-                className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all ${
+                className={`cursor-pointer flex flex-col items-center gap-2 p-3 rounded-2xl transition-all ${
                   category === cat.id
                     ? 'bg-primary text-white shadow-lg scale-105'
                     : 'glass-card hover:bg-white/80 text-gray-500'
@@ -369,7 +369,7 @@ function AddTransactionContent() {
         <button
           onClick={handleSubmit}
           disabled={!amount || Number(amount) === 0}
-          className="pointer-events-auto w-full py-4 rounded-xl flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary-dark text-white font-bold text-lg shadow-glow hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="cursor-pointer pointer-events-auto w-full py-4 rounded-xl flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary-dark text-white font-bold text-lg shadow-glow hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span>Simpan Transaksi</span>
           <span className="material-symbols-outlined">check</span>

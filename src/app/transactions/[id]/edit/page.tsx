@@ -128,7 +128,7 @@ function EditTransactionContent() {
       <header className="px-6 pt-8 pb-4 relative z-10 flex items-center justify-between">
         <button 
           onClick={() => router.back()}
-          className="w-10 h-10 glass-card rounded-xl flex items-center justify-center text-gray-600 hover:scale-105 transition-transform"
+          className="cursor-pointer w-10 h-10 glass-card rounded-xl flex items-center justify-center text-gray-600 hover:scale-105 transition-transform"
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </button>
@@ -136,7 +136,7 @@ function EditTransactionContent() {
         <div className="w-10"></div>
       </header>
 
-      <main className="flex-1 px-6 pb-32 relative z-10 overflow-y-auto no-scrollbar max-w-lg mx-auto w-full">
+      <main className="flex-1 px-6 pb-40 relative z-10 overflow-y-auto w-full no-scrollbar">
         
         <div className="bg-gray-200/50 p-1 rounded-2xl flex relative mb-8">
            <motion.div
@@ -148,13 +148,13 @@ function EditTransactionContent() {
            />
            <button
              onClick={() => setType('expense')}
-             className={`flex-1 py-3 text-sm font-bold text-center relative z-10 transition-colors ${type === 'expense' ? 'text-danger' : 'text-gray-500'}`}
+             className={`cursor-pointer flex-1 py-3 text-sm font-bold text-center relative z-10 transition-colors ${type === 'expense' ? 'text-danger' : 'text-gray-500'}`}
            >
              Pengeluaran
            </button>
            <button
              onClick={() => setType('income')}
-             className={`flex-1 py-3 text-sm font-bold text-center relative z-10 transition-colors ${type === 'income' ? 'text-success' : 'text-gray-500'}`}
+             className={`cursor-pointer flex-1 py-3 text-sm font-bold text-center relative z-10 transition-colors ${type === 'income' ? 'text-success' : 'text-gray-500'}`}
            >
              Pemasukan
            </button>
@@ -182,7 +182,7 @@ function EditTransactionContent() {
               <button
                 key={cat.id}
                 onClick={() => setCategory(cat.id)}
-                className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all ${
+                className={`cursor-pointer flex flex-col items-center gap-2 p-3 rounded-2xl transition-all ${
                   category === cat.id
                     ? 'bg-primary text-white shadow-lg scale-105'
                     : 'glass-card hover:bg-white/80 text-gray-500'
@@ -204,7 +204,7 @@ function EditTransactionContent() {
                type="date"
                value={date}
                onChange={(e) => setDate(e.target.value)}
-               className="bg-transparent w-full text-sm font-bold text-gray-700 focus:outline-none"
+               className="bg-transparent w-full text-sm font-bold text-gray-700 outline-none focus:outline-none"
             />
           </div>
           
@@ -215,18 +215,18 @@ function EditTransactionContent() {
                placeholder="Catatan tambahan..."
                value={note}
                onChange={(e) => setNote(e.target.value)}
-               className="bg-transparent w-full text-sm font-bold text-gray-700 focus:outline-none placeholder-gray-400"
+               className="bg-transparent w-full text-sm font-bold text-gray-700 outline-none focus:outline-none placeholder-gray-400"
             />
           </div>
         </div>
 
       </main>
 
-      <div className="fixed bottom-6 left-0 w-full px-6 z-30 flex justify-center pointer-events-none md:max-w-5xl md:mx-auto">
+      <div className="fixed bottom-6 left-0 right-0 mx-auto w-full px-6 z-30 pointer-events-none md:max-w-5xl">
         <button
           onClick={handleSubmit}
           disabled={!amount || Number(amount) === 0}
-          className="pointer-events-auto w-full max-w-lg py-4 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-white font-bold text-lg shadow-glow hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="cursor-pointer pointer-events-auto w-full py-4 rounded-xl flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary-dark text-white font-bold text-lg shadow-glow hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span>Simpan Perubahan</span>
           <span className="material-symbols-outlined">save</span>
